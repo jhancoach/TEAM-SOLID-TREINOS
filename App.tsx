@@ -11,11 +11,13 @@ import {
   Shield,
   Trash2,
   ChevronRight,
-  Zap
+  Zap,
+  Map as MapIcon
 } from 'lucide-react';
 import { useMatchStore } from './store';
 import { parseLogFile } from './parser';
 import { TableCard } from './components/TableCard';
+import { MapPicker } from './components/MapPicker';
 import { Team, Player, Match } from './types';
 
 interface MatchMVP extends Player {
@@ -26,7 +28,7 @@ interface MatchMVP extends Player {
 
 const App: React.FC = () => {
   const { matches, addMatch, clearData, getGlobalTeamStats, getGlobalPlayerStats } = useMatchStore();
-  const [activeTab, setActiveTab] = useState<'match' | 'global'>('global');
+  const [activeTab, setActiveTab] = useState<'match' | 'global' | 'maps'>('global');
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,10 +116,10 @@ const App: React.FC = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 mt-10">
-        <div className="flex bg-zinc-900/50 p-1.5 rounded-3xl w-fit mx-auto mb-12 border border-zinc-800 backdrop-blur-sm">
+        <div className="flex bg-zinc-900/50 p-1.5 rounded-3xl w-fit mx-auto mb-12 border border-zinc-800 backdrop-blur-sm overflow-x-auto max-w-full">
           <button 
             onClick={() => setActiveTab('global')}
-            className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-xs tracking-widest transition-all ${
+            className={`flex items-center gap-3 px-6 md:px-8 py-4 rounded-2xl font-black text-xs tracking-widest transition-all whitespace-nowrap ${
               activeTab === 'global' ? 'bg-zinc-800 text-white shadow-2xl ring-1 ring-zinc-700' : 'text-zinc-500 hover:text-zinc-300'
             }`}
           >
@@ -125,15 +127,23 @@ const App: React.FC = () => {
           </button>
           <button 
             onClick={() => setActiveTab('match')}
-            className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-xs tracking-widest transition-all ${
+            className={`flex items-center gap-3 px-6 md:px-8 py-4 rounded-2xl font-black text-xs tracking-widest transition-all whitespace-nowrap ${
               activeTab === 'match' ? 'bg-zinc-800 text-white shadow-2xl ring-1 ring-zinc-700' : 'text-zinc-500 hover:text-zinc-300'
             }`}
           >
             <HistoryIcon size={18} /> ÚLTIMA PARTIDA
           </button>
+          <button 
+            onClick={() => setActiveTab('maps')}
+            className={`flex items-center gap-3 px-6 md:px-8 py-4 rounded-2xl font-black text-xs tracking-widest transition-all whitespace-nowrap ${
+              activeTab === 'maps' ? 'bg-zinc-800 text-white shadow-2xl ring-1 ring-zinc-700' : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            <MapIcon size={18} /> MAPAS
+          </button>
         </div>
 
-        {activeTab === 'global' ? (
+        {activeTab === 'global' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
             <TableCard
               title="Classificação Acumulada"
@@ -163,7 +173,9 @@ const App: React.FC = () => {
               ]}
             />
           </div>
-        ) : (
+        )}
+
+        {activeTab === 'match' && (
           <div className="space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-12">
             {lastMatch ? (
               <>
@@ -228,6 +240,10 @@ const App: React.FC = () => {
               </div>
             )}
           </div>
+        )}
+
+        {activeTab === 'maps' && (
+          <MapPicker />
         )}
       </main>
 
