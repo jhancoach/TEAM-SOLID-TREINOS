@@ -45,11 +45,11 @@ const App: React.FC = () => {
           addMatch(parsedTeams);
           setActiveTab('match');
         } else {
-          alert("Nenhum dado válido encontrado no arquivo .log");
+          alert("Nenhum dado válido encontrado no arquivo .log. Verifique a estrutura do texto.");
         }
       } catch (err) {
         console.error(err);
-        alert("Erro ao processar o arquivo.");
+        alert("Erro crítico ao processar o arquivo.");
       } finally {
         setIsUploading(false);
       }
@@ -152,7 +152,7 @@ const App: React.FC = () => {
               data={getGlobalTeamStats()}
               columns={[
                 { header: 'Pos', accessor: (_, idx) => <span className="text-zinc-500 font-black">#{idx + 1}</span>, align: 'center' },
-                { header: 'Time', accessor: (t) => <span className="uppercase tracking-tight">{t.teamName}</span> },
+                { header: 'Time', accessor: (t) => <span className="uppercase font-bold text-zinc-200">{t.teamName}</span> },
                 { header: 'PJ', accessor: (t) => t.matchesPlayed, align: 'center' },
                 { header: 'Kills', accessor: (t) => t.totalKills, align: 'center' },
                 { header: 'Média', accessor: (t) => t.averagePoints, align: 'center' },
@@ -167,7 +167,7 @@ const App: React.FC = () => {
               data={getGlobalPlayerStats()}
               columns={[
                 { header: '#', accessor: (_, idx) => <span className="text-zinc-500">#{idx + 1}</span>, align: 'center' },
-                { header: 'Jogador', accessor: (p) => <span className="font-bold">{p.playerName}</span> },
+                { header: 'Jogador', accessor: (p) => <span className="font-bold text-zinc-100">{p.playerName}</span> },
                 { header: 'Time', accessor: (p) => <span className="text-[10px] font-black uppercase text-zinc-500 tracking-wider">{p.teamName}</span> },
                 { header: 'Kills', accessor: (p) => <span className="font-black text-yellow-400 text-lg">{p.totalKills}</span>, align: 'right' },
               ]}
@@ -208,7 +208,7 @@ const App: React.FC = () => {
                       data={matchTeams}
                       columns={[
                         { header: 'Pos', accessor: (_, idx) => <span className="font-black">#{idx + 1}</span>, align: 'center' },
-                        { header: 'Equipe', accessor: (t) => t.teamName },
+                        { header: 'Equipe', accessor: (t) => <span className="font-bold">{t.teamName}</span> },
                         { header: 'Kills', accessor: (t) => t.killScore, align: 'center' },
                         { header: 'Rank', accessor: (t) => <span className="text-zinc-500">{t.rankScore}</span>, align: 'center' },
                         { header: 'Total', accessor: (t) => <span className="font-black text-yellow-400 text-lg">{t.totalScore}</span>, align: 'right' },
@@ -222,7 +222,7 @@ const App: React.FC = () => {
                       data={matchMVPs}
                       columns={[
                         { header: '#', accessor: (_, idx) => idx + 1, align: 'center' },
-                        { header: 'Jogador', accessor: (p) => p.name },
+                        { header: 'Jogador', accessor: (p) => <div className="flex flex-col"><span className="font-bold">{p.name}</span><span className="text-[9px] uppercase text-zinc-600 font-black">{p.teamName}</span></div> },
                         { header: 'Abates', accessor: (p) => <span className="text-yellow-400 font-black">{p.kills}</span>, align: 'center' },
                         { header: '%', accessor: (p) => <span className="text-[10px] font-bold text-zinc-500">{p.participation}%</span>, align: 'right' },
                       ]}

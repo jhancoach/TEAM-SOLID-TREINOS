@@ -2,89 +2,91 @@
 import { Team, Player } from './types';
 
 export const parseLogFile = (content: string): Team[] => {
+  // Divide o log em linhas, mas trataremos cada linha como um possível bloco de múltiplos dados
   const lines = content.split('\n').map(line => line.trim()).filter(line => line.length > 0);
   const teams: Team[] = [];
   let currentTeam: Team | null = null;
 
-  // Regex para capturar pares Chave: Valor de forma robusta
-  const getMatch = (line: string, key: string) => {
-    const regex = new RegExp(`^${key}\\s*:\\s*(.*)$`, 'i');
-    const match = line.match(regex);
+  // Lista de todas as palavras-chave conhecidas para delimitar a captura
+  const keywords = [
+    'TeamName', 'RankScore', 'KillScore', 'TotalScore', 'Rank', 
+    'Name', 'Id', 'Kill'
+  ];
+
+  /**
+   * Extrai o valor de uma chave específica dentro de um texto, 
+   * parando assim que encontrar outra chave da lista ou o fim da linha.
+   */
+  const extractValue = (text: string, key: string): string | null => {
+    // Regex: Procura a Chave:, captura tudo depois dela ATÉ encontrar outra Chave: ou fim da string
+    const pattern = `${key}\\s*:\\s*(.*?)(?=\\s+(?:${keywords.join('|')})\\s*:|$)`;
+    const regex = new RegExp(pattern, 'i');
+    const match = text.match(regex);
     return match ? match[1].trim() : null;
   };
 
   for (const line of lines) {
-    // 1. Início de Time
-    const teamName = getMatch(line, 'TeamName');
+    // 1. Verificar se a linha contém o início de um novo time
+    const teamName = extractValue(line, 'TeamName');
+    
     if (teamName) {
+      // Salva o time anterior se existir
       if (currentTeam) teams.push(currentTeam);
+      
+      // Inicializa novo time
       currentTeam = {
-        teamName,
+        teamName: teamName,
         players: [],
         rank: 0,
         killScore: 0,
         rankScore: 0,
         totalScore: 0
       };
-      continue;
     }
 
     if (!currentTeam) continue;
 
-    // 2. Atributos do Time (Priorizamos nomes específicos para evitar conflitos)
-    const killScore = getMatch(line, 'KillScore');
-    if (killScore !== null) {
-      currentTeam.killScore = parseInt(killScore) || 0;
-      continue;
-    }
+    // 2. Extrair atributos do time (podem estar na mesma linha do TeamName ou em linhas separadas)
+    const rank = extractValue(line, 'Rank');
+    if (rank !== null) currentTeam.rank = parseInt(rank) || currentTeam.rank;
 
-    const rankScore = getMatch(line, 'RankScore');
-    if (rankScore !== null) {
-      currentTeam.rankScore = parseInt(rankScore) || 0;
-      continue;
-    }
+    const killScore = extractValue(line, 'KillScore');
+    if (killScore !== null) currentTeam.killScore = parseInt(killScore) || currentTeam.killScore;
 
-    const totalScore = getMatch(line, 'TotalScore');
-    if (totalScore !== null) {
-      currentTeam.totalScore = parseInt(totalScore) || 0;
-      continue;
-    }
+    const rankScore = extractValue(line, 'RankScore');
+    if (rankScore !== null) currentTeam.rankScore = parseInt(rankScore) || currentTeam.rankScore;
 
-    const rank = getMatch(line, 'Rank');
-    if (rank !== null) {
-      currentTeam.rank = parseInt(rank) || 0;
-      continue;
-    }
+    const totalScore = extractValue(line, 'TotalScore');
+    if (totalScore !== null) currentTeam.totalScore = parseInt(totalScore) || currentTeam.totalScore;
 
-    // 3. Atributos do Jogador
-    const playerName = getMatch(line, 'Name');
+    // 3. Verificar Jogadores
+    const playerName = extractValue(line, 'Name');
     if (playerName) {
+      // Extrai os dados do jogador que geralmente acompanham o Name na mesma linha
+      const pId = extractValue(line, 'Id') || '0';
+      const pKills = extractValue(line, 'Kill') || '0';
+
       currentTeam.players.push({
         name: playerName,
-        id: '0',
-        kills: 0
+        id: pId,
+        kills: parseInt(pKills) || 0
       });
-      continue;
-    }
-
-    const playerId = getMatch(line, 'Id');
-    if (playerId && currentTeam.players.length > 0) {
-      currentTeam.players[currentTeam.players.length - 1].id = playerId;
-      continue;
-    }
-
-    // Usamos regex mais específica para 'Kill' de jogador para não confundir com 'KillScore'
-    const playerKills = getMatch(line, 'Kill');
-    if (playerKills !== null && currentTeam.players.length > 0) {
-      currentTeam.players[currentTeam.players.length - 1].kills = parseInt(playerKills) || 0;
-      continue;
+    } else {
+      // Caso o ID ou Kill venham em linhas separadas após o Name
+      if (currentTeam.players.length > 0) {
+        const lastPlayer = currentTeam.players[currentTeam.players.length - 1];
+        const pId = extractValue(line, 'Id');
+        if (pId) lastPlayer.id = pId;
+        
+        const pKills = extractValue(line, 'Kill');
+        if (pKills) lastPlayer.kills = parseInt(pKills) || lastPlayer.kills;
+      }
     }
   }
 
+  // Adiciona o último time processado
   if (currentTeam) teams.push(currentTeam);
   
-  // LOG DE DEPURAÇÃO PARA O CONSOLE (Ajuda a identificar se o log está sendo lido)
-  console.log("Times processados:", teams);
-  
+  console.log("Parsing finalizado. Total de times:", teams.length);
   return teams;
 };
