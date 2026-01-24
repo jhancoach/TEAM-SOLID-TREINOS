@@ -35,3 +35,9 @@ export interface GlobalPlayerStats {
   totalKills: number;
   averageKills: number;
 }
+
+export interface MapInfo {
+  id: string;
+  name: string;
+  url: string;
+}

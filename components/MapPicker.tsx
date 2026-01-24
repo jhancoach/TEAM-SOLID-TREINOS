@@ -2,25 +2,11 @@
 import React, { useState, useRef } from 'react';
 import { Shuffle, Camera, Loader2, Map as MapIcon, RotateCcw, Play } from 'lucide-react';
 import html2canvas from 'html2canvas';
-
-interface MapInfo {
-  id: string;
-  name: string;
-  url: string;
-}
-
-const MAPS_DATABASE: MapInfo[] = [
-  { id: 'BER', name: 'Bermuda', url: 'https://i.ibb.co/mrHhztmS/BERMUDA.png' },
-  { id: 'ALP', name: 'Alpine', url: 'https://i.ibb.co/XZFNYHBG/ALPINE.png' },
-  { id: 'PUR', name: 'Purgatório', url: 'https://i.ibb.co/gZ0Psrnh/PURGAT-RIO.png' },
-  { id: 'NT', name: 'Nova Terra', url: 'https://i.ibb.co/ZR4tgkMx/NOVA-TERRA.png' },
-  { id: 'KAL', name: 'Kalahari', url: 'https://i.ibb.co/XZNQ78r6/KALAHARI.png' },
-  { id: 'SOL', name: 'Solara', url: 'https://i.ibb.co/j9bT8t3R/SOLARA.png' },
-];
+import { useMatchStore } from '../store';
+import { MapInfo } from '../types';
 
 export const MapPicker: React.FC = () => {
-  const [sequence, setSequence] = useState<MapInfo[]>([]);
-  const [availableMaps, setAvailableMaps] = useState<MapInfo[]>([...MAPS_DATABASE]);
+  const { mapSequence, availableMaps, updateMaps, resetMaps: storeResetMaps } = useMatchStore();
   const [isShuffling, setIsShuffling] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const captureRef = useRef<HTMLDivElement>(null);
@@ -35,20 +21,23 @@ export const MapPicker: React.FC = () => {
       const randomIndex = Math.floor(Math.random() * availableMaps.length);
       const selectedMap = availableMaps[randomIndex];
       
-      setSequence(prev => [...prev, selectedMap]);
-      setAvailableMaps(prev => prev.filter((_, idx) => idx !== randomIndex));
+      const newSequence = [...mapSequence, selectedMap];
+      const newAvailable = availableMaps.filter((_, idx) => idx !== randomIndex);
+      
+      updateMaps(newSequence, newAvailable);
       setIsShuffling(false);
     }, 800);
   };
 
-  const resetMaps = () => {
+  const handleReset = () => {
     if (isShuffling) return;
-    setSequence([]);
-    setAvailableMaps([...MAPS_DATABASE]);
+    if (confirm("Deseja resetar a sequência de mapas?")) {
+      storeResetMaps();
+    }
   };
 
   const handleCapture = async () => {
-    if (!captureRef.current || sequence.length === 0) return;
+    if (!captureRef.current || mapSequence.length === 0) return;
     setIsCapturing(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 200));
@@ -80,7 +69,7 @@ export const MapPicker: React.FC = () => {
           <div>
             <h2 className="text-xl font-black text-white uppercase tracking-tighter">Sorteio Individual</h2>
             <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">
-              {sequence.length} de 6 Quedas Definidas
+              {mapSequence.length} de 6 Quedas Definidas
             </p>
           </div>
         </div>
@@ -93,7 +82,7 @@ export const MapPicker: React.FC = () => {
               className="flex items-center gap-3 px-6 py-3 bg-yellow-500 hover:bg-yellow-400 text-zinc-950 font-black text-xs uppercase tracking-widest rounded-2xl transition-all active:scale-95 shadow-lg shadow-yellow-500/20 border-b-4 border-yellow-700 disabled:opacity-50"
             >
               {isShuffling ? <Loader2 className="animate-spin" size={18} /> : <Play size={18} fill="currentColor" />}
-              SORTEAR {sequence.length + 1}ª QUEDA
+              SORTEAR {mapSequence.length + 1}ª QUEDA
             </button>
           ) : (
             <div className="px-6 py-3 bg-zinc-800 text-zinc-400 font-black text-xs uppercase tracking-widest rounded-2xl border border-zinc-700 italic">
@@ -102,14 +91,14 @@ export const MapPicker: React.FC = () => {
           )}
 
           <button
-            onClick={resetMaps}
+            onClick={handleReset}
             className="p-3 bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-red-400 rounded-2xl transition-all active:scale-95"
             title="Resetar Sorteio"
           >
             <RotateCcw size={18} />
           </button>
 
-          {sequence.length > 0 && (
+          {mapSequence.length > 0 && (
             <button
               onClick={handleCapture}
               disabled={isCapturing}
@@ -124,10 +113,9 @@ export const MapPicker: React.FC = () => {
 
       <div ref={captureRef} className="p-4 rounded-[2.5rem] bg-zinc-950/20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Renderiza os 6 slots fixos */}
           {[...Array(6)].map((_, index) => {
-            const map = sequence[index];
-            const isCurrentSorteando = isShuffling && index === sequence.length;
+            const map = mapSequence[index];
+            const isCurrentSorteando = isShuffling && index === mapSequence.length;
 
             return (
               <div 
