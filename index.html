@@ -4,7 +4,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Treinos Team Solid</title>
+    <title>Treinos Team Solid - Dashboard</title>
+    <meta name="description" content="Análise competitiva de treinos Team Solid">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,6 +15,7 @@
         font-family: 'Inter', sans-serif;
         background-color: #09090b;
         color: #fafafa;
+        overflow-x: hidden;
       }
       ::-webkit-scrollbar {
         width: 8px;
@@ -43,5 +45,7 @@
 </head>
   <body>
     <div id="root"></div>
+    <!-- Ponto de entrada crucial para deploy em produção -->
+    <script type="module" src="index.tsx"></script>
   </body>
 </html>
