@@ -19,12 +19,12 @@ export const useMatchStore = () => {
   const [mapSequence, setMapSequence] = useState<MapInfo[]>([]);
   const [availableMaps, setAvailableMaps] = useState<MapInfo[]>([...MAPS_DATABASE]);
 
-  // Load from localStorage on mount
   useEffect(() => {
     const savedMatches = localStorage.getItem(STORAGE_KEY);
     if (savedMatches) {
       try {
-        setMatches(JSON.parse(savedMatches));
+        const parsed = JSON.parse(savedMatches);
+        if (Array.isArray(parsed)) setMatches(parsed);
       } catch (e) {
         console.error("Failed to load matches", e);
       }
@@ -42,12 +42,10 @@ export const useMatchStore = () => {
     }
   }, []);
 
-  // Save to localStorage whenever matches update
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(matches));
   }, [matches]);
 
-  // Save to localStorage whenever maps update
   useEffect(() => {
     localStorage.setItem(MAPS_STORAGE_KEY, JSON.stringify({
       sequence: mapSequence,
@@ -65,7 +63,7 @@ export const useMatchStore = () => {
   };
 
   const clearData = () => {
-    if (confirm("Tem certeza que deseja apagar todo o histórico?")) {
+    if (confirm("Deseja apagar permanentemente todo o histórico de treinos?")) {
       setMatches([]);
     }
   };
@@ -85,22 +83,30 @@ export const useMatchStore = () => {
 
     matches.forEach(match => {
       match.teams.forEach(team => {
-        const existing = statsMap.get(team.teamName) || { kills: 0, points: 0, matches: 0 };
-        statsMap.set(team.teamName, {
-          kills: existing.kills + (team.killScore || 0),
-          points: existing.points + (team.totalScore || 0),
+        const name = team.teamName;
+        const existing = statsMap.get(name) || { kills: 0, points: 0, matches: 0 };
+        
+        // Garantimos conversão para número para evitar NaN nas tabelas
+        const k = Number(team.killScore) || 0;
+        const p = Number(team.totalScore) || 0;
+
+        statsMap.set(name, {
+          kills: existing.kills + k,
+          points: existing.points + p,
           matches: existing.matches + 1
         });
       });
     });
 
-    return Array.from(statsMap.entries()).map(([name, data]) => ({
+    const result = Array.from(statsMap.entries()).map(([name, data]) => ({
       teamName: name,
       matchesPlayed: data.matches,
       totalKills: data.kills,
       totalPoints: data.points,
       averagePoints: Number((data.points / data.matches).toFixed(2))
-    })).sort((a, b) => b.totalPoints - a.totalPoints);
+    })).sort((a, b) => b.totalPoints - a.totalPoints || b.totalKills - a.totalKills);
+
+    return result;
   };
 
   const getGlobalPlayerStats = (): GlobalPlayerStats[] => {
@@ -109,11 +115,15 @@ export const useMatchStore = () => {
     matches.forEach(match => {
       match.teams.forEach(team => {
         team.players.forEach(player => {
-          const key = `${player.name}_${team.teamName}`;
+          // Chave única composta por Jogador + Time para evitar conflito de nomes comuns
+          const key = `${player.name}|||${team.teamName}`;
           const existing = statsMap.get(key) || { team: team.teamName, kills: 0, matches: 0 };
+          
+          const k = Number(player.kills) || 0;
+
           statsMap.set(key, {
             team: team.teamName,
-            kills: existing.kills + (player.kills || 0),
+            kills: existing.kills + k,
             matches: existing.matches + 1
           });
         });
@@ -121,15 +131,12 @@ export const useMatchStore = () => {
     });
 
     return Array.from(statsMap.entries()).map(([key, data]) => ({
-      playerName: key.split('_')[0],
+      playerName: key.split('|||')[0],
       teamName: data.team,
       matchesPlayed: data.matches,
       totalKills: data.kills,
       averageKills: Number((data.kills / data.matches).toFixed(2))
-    })).sort((a, b) => {
-      if (b.totalKills !== a.totalKills) return b.totalKills - a.totalKills;
-      return b.averageKills - a.averageKills;
-    });
+    })).sort((a, b) => b.totalKills - a.totalKills || b.averageKills - a.averageKills);
   };
 
   return {
