@@ -62,9 +62,20 @@ export const useMatchStore = () => {
     setMatches(prev => [...prev, newMatch]);
   };
 
-  const clearData = () => {
-    if (confirm("Deseja apagar permanentemente todo o histórico de treinos?")) {
+  const resetMatches = () => {
+    if (confirm("Deseja iniciar um NOVO TREINO? Isso apagará todas as partidas e tabelas atuais.")) {
       setMatches([]);
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  };
+
+  const clearData = () => {
+    if (confirm("ALERTA: Isso apagará TUDO (Histórico + Mapas). Tem certeza?")) {
+      setMatches([]);
+      setMapSequence([]);
+      setAvailableMaps([...MAPS_DATABASE]);
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(MAPS_STORAGE_KEY);
     }
   };
 
@@ -79,34 +90,37 @@ export const useMatchStore = () => {
   };
 
   const getGlobalTeamStats = (): GlobalTeamStats[] => {
-    const statsMap = new Map<string, { kills: number, points: number, matches: number }>();
+    const statsMap = new Map<string, { kills: number, rankPoints: number, points: number, matches: number, booyahs: number }>();
 
     matches.forEach(match => {
       match.teams.forEach(team => {
         const name = team.teamName;
-        const existing = statsMap.get(name) || { kills: 0, points: 0, matches: 0 };
+        const existing = statsMap.get(name) || { kills: 0, rankPoints: 0, points: 0, matches: 0, booyahs: 0 };
         
-        // Garantimos conversão para número para evitar NaN nas tabelas
         const k = Number(team.killScore) || 0;
+        const rp = Number(team.rankScore) || 0;
         const p = Number(team.totalScore) || 0;
+        const isBooyah = Number(team.rank) === 1 ? 1 : 0;
 
         statsMap.set(name, {
           kills: existing.kills + k,
+          rankPoints: existing.rankPoints + rp,
           points: existing.points + p,
-          matches: existing.matches + 1
+          matches: existing.matches + 1,
+          booyahs: existing.booyahs + isBooyah
         });
       });
     });
 
-    const result = Array.from(statsMap.entries()).map(([name, data]) => ({
+    return Array.from(statsMap.entries()).map(([name, data]) => ({
       teamName: name,
       matchesPlayed: data.matches,
       totalKills: data.kills,
+      totalRankPoints: data.rankPoints,
       totalPoints: data.points,
-      averagePoints: Number((data.points / data.matches).toFixed(2))
-    })).sort((a, b) => b.totalPoints - a.totalPoints || b.totalKills - a.totalKills);
-
-    return result;
+      averagePoints: Number((data.points / data.matches).toFixed(2)),
+      totalBooyahs: data.booyahs
+    })).sort((a, b) => b.totalPoints - a.totalPoints || b.totalBooyahs - a.totalBooyahs || b.totalKills - a.totalKills);
   };
 
   const getGlobalPlayerStats = (): GlobalPlayerStats[] => {
@@ -115,10 +129,8 @@ export const useMatchStore = () => {
     matches.forEach(match => {
       match.teams.forEach(team => {
         team.players.forEach(player => {
-          // Chave única composta por Jogador + Time para evitar conflito de nomes comuns
           const key = `${player.name}|||${team.teamName}`;
           const existing = statsMap.get(key) || { team: team.teamName, kills: 0, matches: 0 };
-          
           const k = Number(player.kills) || 0;
 
           statsMap.set(key, {
@@ -144,6 +156,7 @@ export const useMatchStore = () => {
     mapSequence,
     availableMaps,
     addMatch,
+    resetMatches,
     clearData,
     updateMaps,
     resetMaps,

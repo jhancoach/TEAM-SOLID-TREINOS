@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { 
   Trophy, 
   Upload, 
@@ -10,15 +10,17 @@ import {
   Sword,
   Shield,
   Trash2,
-  ChevronRight,
   Zap,
-  Map as MapIcon
+  Map as MapIcon,
+  Crown,
+  RotateCcw,
+  UserCheck
 } from 'lucide-react';
 import { useMatchStore } from './store';
 import { parseLogFile } from './parser';
 import { TableCard } from './components/TableCard';
 import { MapPicker } from './components/MapPicker';
-import { Team, Player, Match } from './types';
+import { Player } from './types';
 
 interface MatchMVP extends Player {
   teamName: string;
@@ -26,9 +28,11 @@ interface MatchMVP extends Player {
   participation: string;
 }
 
+type TabType = 'global-teams' | 'global-players' | 'match-teams' | 'match-players' | 'maps';
+
 const App: React.FC = () => {
-  const { matches, addMatch, clearData, getGlobalTeamStats, getGlobalPlayerStats } = useMatchStore();
-  const [activeTab, setActiveTab] = useState<'match' | 'global' | 'maps'>('global');
+  const { matches, addMatch, resetMatches, clearData, getGlobalTeamStats, getGlobalPlayerStats } = useMatchStore();
+  const [activeTab, setActiveTab] = useState<TabType>('global-teams');
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,9 +47,9 @@ const App: React.FC = () => {
         const parsedTeams = parseLogFile(content);
         if (parsedTeams.length > 0) {
           addMatch(parsedTeams);
-          setActiveTab('match');
+          setActiveTab('match-teams');
         } else {
-          alert("Nenhum dado válido encontrado no arquivo .log. Verifique a estrutura do texto.");
+          alert("Nenhum dado válido encontrado no arquivo .log.");
         }
       } catch (err) {
         console.error(err);
@@ -88,26 +92,33 @@ const App: React.FC = () => {
               <h1 className="text-2xl md:text-3xl font-black tracking-tighter uppercase italic text-white leading-none">
                 Treinos <span className="text-yellow-400">Team Solid</span>
               </h1>
-              <p className="text-[10px] uppercase tracking-[0.3em] font-black text-zinc-500 mt-1">Selo de Qualidade Competitiva</p>
+              <p className="text-[10px] uppercase tracking-[0.3em] font-black text-zinc-500 mt-1">Dashboard de Performance</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={resetMatches}
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-300 font-black text-[10px] uppercase tracking-widest hover:bg-zinc-800 hover:border-zinc-700 transition-all active:scale-95 shadow-xl"
+            >
+              <RotateCcw size={16} className="text-zinc-500" />
+              NOVO TREINO
+            </button>
+
             <label className={`
-              flex items-center gap-3 px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest cursor-pointer transition-all active:scale-95 shadow-2xl
+              flex items-center gap-3 px-8 py-3 rounded-2xl font-black text-[10px] uppercase tracking-widest cursor-pointer transition-all active:scale-95 shadow-2xl
               ${isUploading 
                 ? 'bg-zinc-800 text-zinc-500 border border-zinc-700' 
                 : 'bg-yellow-500 hover:bg-yellow-400 text-zinc-950 hover:shadow-yellow-500/30 border-b-4 border-yellow-700 hover:border-yellow-600'}
             `}>
-              {isUploading ? <Zap className="animate-spin" size={20} /> : <Upload size={20} />}
-              {isUploading ? 'PROCESSANDO...' : 'IMPORTAR LOG'}
+              {isUploading ? <Zap className="animate-spin" size={16} /> : <Upload size={16} />}
+              {isUploading ? 'LENDO...' : 'IMPORTAR LOG'}
               <input type="file" accept=".log,.txt" className="hidden" onChange={handleFileUpload} disabled={isUploading} />
             </label>
             
             <button 
               onClick={clearData}
-              className="p-3 rounded-2xl bg-zinc-900 border border-zinc-800 text-zinc-500 hover:text-red-500 hover:border-red-500/50 transition-all shadow-xl"
-              title="Limpar Histórico"
+              className="p-3 rounded-2xl bg-zinc-950 border border-zinc-900 text-zinc-700 hover:text-red-500 transition-all active:scale-95 group relative"
             >
               <Trash2 size={20} />
             </button>
@@ -116,150 +127,174 @@ const App: React.FC = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 mt-10">
-        <div className="flex bg-zinc-900/50 p-1.5 rounded-3xl w-fit mx-auto mb-12 border border-zinc-800 backdrop-blur-sm overflow-x-auto max-w-full">
-          <button 
-            onClick={() => setActiveTab('global')}
-            className={`flex items-center gap-3 px-6 md:px-8 py-4 rounded-2xl font-black text-xs tracking-widest transition-all whitespace-nowrap ${
-              activeTab === 'global' ? 'bg-zinc-800 text-white shadow-2xl ring-1 ring-zinc-700' : 'text-zinc-500 hover:text-zinc-300'
-            }`}
-          >
-            <Trophy size={18} /> GERAL
+        <nav className="flex bg-zinc-900/50 p-1.5 rounded-3xl w-fit mx-auto mb-12 border border-zinc-800 backdrop-blur-sm overflow-x-auto max-w-full no-scrollbar">
+          <button onClick={() => setActiveTab('global-teams')} className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl font-black text-[10px] tracking-widest transition-all ${activeTab === 'global-teams' ? 'bg-zinc-800 text-white shadow-2xl ring-1 ring-zinc-700' : 'text-zinc-500 hover:text-zinc-300'}`}>
+            <Trophy size={14} /> RANKING GERAL
           </button>
-          <button 
-            onClick={() => setActiveTab('match')}
-            className={`flex items-center gap-3 px-6 md:px-8 py-4 rounded-2xl font-black text-xs tracking-widest transition-all whitespace-nowrap ${
-              activeTab === 'match' ? 'bg-zinc-800 text-white shadow-2xl ring-1 ring-zinc-700' : 'text-zinc-500 hover:text-zinc-300'
-            }`}
-          >
-            <HistoryIcon size={18} /> ÚLTIMA PARTIDA
+          <button onClick={() => setActiveTab('global-players')} className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl font-black text-[10px] tracking-widest transition-all ${activeTab === 'global-players' ? 'bg-zinc-800 text-white shadow-2xl ring-1 ring-zinc-700' : 'text-zinc-500 hover:text-zinc-300'}`}>
+            <Users size={14} /> TOP FRAGGERS
           </button>
-          <button 
-            onClick={() => setActiveTab('maps')}
-            className={`flex items-center gap-3 px-6 md:px-8 py-4 rounded-2xl font-black text-xs tracking-widest transition-all whitespace-nowrap ${
-              activeTab === 'maps' ? 'bg-zinc-800 text-white shadow-2xl ring-1 ring-zinc-700' : 'text-zinc-500 hover:text-zinc-300'
-            }`}
-          >
-            <MapIcon size={18} /> MAPAS
+          <button onClick={() => setActiveTab('match-teams')} className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl font-black text-[10px] tracking-widest transition-all ${activeTab === 'match-teams' ? 'bg-zinc-800 text-white shadow-2xl ring-1 ring-zinc-700' : 'text-zinc-500 hover:text-zinc-300'}`}>
+            <TrendingUp size={14} /> ÚLTIMA RODADA
           </button>
-        </div>
+          <button onClick={() => setActiveTab('match-players')} className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl font-black text-[10px] tracking-widest transition-all ${activeTab === 'match-players' ? 'bg-zinc-800 text-white shadow-2xl ring-1 ring-zinc-700' : 'text-zinc-500 hover:text-zinc-300'}`}>
+            <UserCheck size={14} /> MVPs RODADA
+          </button>
+          <button onClick={() => setActiveTab('maps')} className={`flex items-center gap-3 px-5 py-3.5 rounded-2xl font-black text-[10px] tracking-widest transition-all ${activeTab === 'maps' ? 'bg-zinc-800 text-white shadow-2xl ring-1 ring-zinc-700' : 'text-zinc-500 hover:text-zinc-300'}`}>
+            <MapIcon size={14} /> MAPAS
+          </button>
+        </nav>
 
-        {activeTab === 'global' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+        <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
+          {activeTab === 'global-teams' && (
             <TableCard
-              title="Classificação Acumulada"
-              subtitle="O ranking definitivo dos melhores times"
-              icon={<TrendingUp size={24} />}
+              title="Classificação Geral"
+              subtitle="Desempenho acumulado"
+              icon={<Trophy size={20} />}
               data={getGlobalTeamStats()}
               columns={[
-                { header: 'Pos', accessor: (_, idx) => <span className="text-zinc-500 font-black">#{idx + 1}</span>, align: 'center' },
-                { header: 'Time', accessor: (t) => <span className="uppercase font-bold text-zinc-200">{t.teamName}</span> },
-                { header: 'PJ', accessor: (t) => t.matchesPlayed, align: 'center' },
-                { header: 'Kills', accessor: (t) => t.totalKills, align: 'center' },
-                { header: 'Média', accessor: (t) => t.averagePoints, align: 'center' },
-                { header: 'Pontos', accessor: (t) => <span className="font-black text-yellow-400 text-lg">{t.totalPoints}</span>, align: 'right' },
+                { header: 'POS', accessor: (_, idx) => <span className="text-zinc-600 font-black">#{idx + 1}</span>, align: 'center', width: '45px' },
+                { header: 'TIME', accessor: (t) => <span className="uppercase font-bold text-zinc-100 text-[12px]">{t.teamName}</span> },
+                { header: 'PJ', accessor: (t) => <span className="text-zinc-500 font-bold">{t.matchesPlayed}</span>, align: 'center', width: '40px' },
+                { header: 'B', accessor: (t) => (
+                  <div className="flex items-center justify-center gap-1">
+                    <span className={`font-black ${t.totalBooyahs > 0 ? 'text-yellow-400' : 'text-zinc-700'}`}>{t.totalBooyahs}</span>
+                    {t.totalBooyahs > 0 && <Crown size={10} className="text-yellow-500" />}
+                  </div>
+                ), align: 'center', width: '40px' },
+                { header: 'K', accessor: (t) => <span className="text-zinc-300 font-bold">{t.totalKills}</span>, align: 'center', width: '40px' },
+                { header: '% ABTS', accessor: (t) => (
+                  <span className="text-[10px] text-zinc-500 font-bold">
+                    {t.totalPoints > 0 ? ((t.totalKills / t.totalPoints) * 100).toFixed(0) : 0}%
+                  </span>
+                ), align: 'center', width: '55px' },
+                { header: 'PTS POS', accessor: (t) => <span className="text-zinc-400 font-bold">{t.totalRankPoints}</span>, align: 'center', width: '60px' },
+                { header: '% POS', accessor: (t) => (
+                  <span className="text-[10px] text-zinc-500 font-bold">
+                    {t.totalPoints > 0 ? ((t.totalRankPoints / t.totalPoints) * 100).toFixed(0) : 0}%
+                  </span>
+                ), align: 'center', width: '55px' },
+                { header: 'PONTOS', accessor: (t) => <span className="font-black text-yellow-400 text-lg tracking-tighter">{t.totalPoints}</span>, align: 'center', width: '75px' },
               ]}
             />
+          )}
 
+          {activeTab === 'global-players' && (
             <TableCard
-              title="MVP Rankings"
-              subtitle="Líderes de abate da temporada"
-              icon={<Users size={24} />}
+              title="Top Fraggers"
+              subtitle="Líderes de abates"
+              icon={<Users size={20} />}
               data={getGlobalPlayerStats()}
               columns={[
-                { header: '#', accessor: (_, idx) => <span className="text-zinc-500">#{idx + 1}</span>, align: 'center' },
-                { header: 'Jogador', accessor: (p) => <span className="font-bold text-zinc-100">{p.playerName}</span> },
-                { header: 'Time', accessor: (p) => <span className="text-[10px] font-black uppercase text-zinc-500 tracking-wider">{p.teamName}</span> },
-                { header: 'Kills', accessor: (p) => <span className="font-black text-yellow-400 text-lg">{p.totalKills}</span>, align: 'right' },
+                { header: 'POS', accessor: (_, idx) => <span className="text-zinc-600 font-black">#{idx + 1}</span>, align: 'center', width: '45px' },
+                { header: 'JOGADOR', accessor: (p) => <span className="font-bold text-zinc-100">{p.playerName}</span> },
+                { header: 'TIME', accessor: (p) => <span className="text-[9px] font-black uppercase text-zinc-600 truncate">{p.teamName}</span> },
+                { header: 'PJ', accessor: (p) => <span className="text-zinc-500">{p.matchesPlayed}</span>, align: 'center', width: '40px' },
+                { header: 'MÉDIA', accessor: (p) => <span className="text-zinc-600 text-[10px] font-black">{p.averageKills}</span>, align: 'center', width: '60px' },
+                { header: 'K', accessor: (p) => <span className="font-black text-yellow-400 text-lg">{p.totalKills}</span>, align: 'center', width: '80px' },
               ]}
             />
-          </div>
-        )}
+          )}
 
-        {activeTab === 'match' && (
-          <div className="space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700 pb-12">
-            {lastMatch ? (
-              <>
-                <div className="flex flex-col md:flex-row items-center justify-between bg-zinc-900/80 p-8 rounded-[2rem] border border-zinc-800 shadow-2xl gap-6">
-                  <div className="flex items-center gap-6">
-                    <div className="w-16 h-16 bg-zinc-800 rounded-2xl flex items-center justify-center border border-zinc-700">
-                      <Calendar className="text-yellow-400" size={32} />
+          {activeTab === 'match-teams' && (
+            <div className="space-y-4">
+              {lastMatch ? (
+                <>
+                  <div className="bg-zinc-900/50 p-4 rounded-2xl border border-zinc-800 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Calendar className="text-yellow-500" size={18} />
+                      <p className="font-black text-white text-[11px] uppercase tracking-widest">{new Date(lastMatch.timestamp).toLocaleString('pt-BR')}</p>
                     </div>
-                    <div>
-                      <p className="text-[10px] text-yellow-500 font-black uppercase tracking-[0.3em] mb-1">Status da Partida</p>
-                      <h2 className="text-2xl font-black text-white">
-                        {new Date(lastMatch.timestamp).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })} às {new Date(lastMatch.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-                      </h2>
+                    <div className="text-right">
+                      <span className="text-[9px] font-black uppercase text-zinc-600 tracking-widest mr-2">EQUIPES NA SALA:</span>
+                      <span className="font-black text-yellow-500 text-base">{lastMatch.teams.length}</span>
                     </div>
                   </div>
-                  <div className="h-12 w-px bg-zinc-800 hidden md:block" />
-                  <div className="flex flex-col items-center md:items-end">
-                    <p className="text-[10px] text-zinc-500 font-black uppercase tracking-[0.3em] mb-1">Session Token</p>
-                    <code className="text-xs text-zinc-400 bg-zinc-950 px-4 py-2 rounded-xl border border-zinc-800 font-mono tracking-tighter">
-                      {lastMatch.id.slice(0, 18).toUpperCase()}...
-                    </code>
-                  </div>
-                </div>
+                  <TableCard
+                    title="Resultado da Rodada"
+                    icon={<Shield size={20} />}
+                    data={matchTeams}
+                    columns={[
+                      { header: 'RANK', accessor: (t) => (
+                         <div className="flex items-center gap-1 justify-center">
+                           <span className={`font-black ${t.rank === 1 ? 'text-yellow-400' : 'text-zinc-600'}`}>#{t.rank}</span>
+                           {t.rank === 1 && <Crown size={10} className="text-yellow-500" />}
+                         </div>
+                      ), align: 'center', width: '45px' },
+                      { header: 'EQUIPE', accessor: (t) => (
+                        <div className="flex flex-col leading-tight">
+                          <span className={`font-bold uppercase text-[12px] tracking-tight ${t.rank === 1 ? 'text-yellow-400' : 'text-zinc-100'}`}>{t.teamName}</span>
+                          {t.rank === 1 && <span className="text-[7px] font-black text-yellow-600 tracking-widest">BOOYAH!</span>}
+                        </div>
+                      ) },
+                      { header: 'K', accessor: (t) => t.killScore, align: 'center', width: '40px' },
+                      { header: '% ABTS', accessor: (t) => (
+                        <span className="text-[10px] text-zinc-500 font-bold">
+                          {t.totalScore > 0 ? ((t.killScore / t.totalScore) * 100).toFixed(0) : 0}%
+                        </span>
+                      ), align: 'center', width: '55px' },
+                      { header: 'PTS RANK', accessor: (t) => <span className="text-zinc-400 font-bold">{t.rankScore}</span>, align: 'center', width: '60px' },
+                      { header: '% POS', accessor: (t) => (
+                        <span className="text-[10px] text-zinc-500 font-bold">
+                          {t.totalScore > 0 ? ((t.rankScore / t.totalScore) * 100).toFixed(0) : 0}%
+                        </span>
+                      ), align: 'center', width: '55px' },
+                      { header: 'PONTOS', accessor: (t) => <span className={`font-black text-lg tracking-tighter ${t.rank === 1 ? 'text-yellow-400' : 'text-white'}`}>{t.totalScore}</span>, align: 'center', width: '75px' },
+                    ]}
+                  />
+                </>
+              ) : (
+                <EmptyState icon={<HistoryIcon />} text="Nenhum treino importado ainda" />
+              )}
+            </div>
+          )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                  <div className="lg:col-span-2">
-                    <TableCard
-                      title="Performance da Rodada"
-                      icon={<Shield size={20} />}
-                      data={matchTeams}
-                      columns={[
-                        { header: 'Pos', accessor: (_, idx) => <span className="font-black">#{idx + 1}</span>, align: 'center' },
-                        { header: 'Equipe', accessor: (t) => <span className="font-bold">{t.teamName}</span> },
-                        { header: 'Kills', accessor: (t) => t.killScore, align: 'center' },
-                        { header: 'Rank', accessor: (t) => <span className="text-zinc-500">{t.rankScore}</span>, align: 'center' },
-                        { header: 'Total', accessor: (t) => <span className="font-black text-yellow-400 text-lg">{t.totalScore}</span>, align: 'right' },
-                      ]}
-                    />
-                  </div>
-                  <div className="lg:col-span-1">
-                    <TableCard
-                      title="MVPs Partida"
-                      icon={<Sword size={20} />}
-                      data={matchMVPs}
-                      columns={[
-                        { header: '#', accessor: (_, idx) => idx + 1, align: 'center' },
-                        { header: 'Jogador', accessor: (p) => <div className="flex flex-col"><span className="font-bold">{p.name}</span><span className="text-[9px] uppercase text-zinc-600 font-black">{p.teamName}</span></div> },
-                        { header: 'Abates', accessor: (p) => <span className="text-yellow-400 font-black">{p.kills}</span>, align: 'center' },
-                        { header: '%', accessor: (p) => <span className="text-[10px] font-bold text-zinc-500">{p.participation}%</span>, align: 'right' },
-                      ]}
-                    />
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-32 bg-zinc-900/30 rounded-[3rem] border-2 border-dashed border-zinc-800/50">
-                <div className="w-24 h-24 bg-zinc-900 rounded-3xl flex items-center justify-center border border-zinc-800 mb-6 animate-pulse">
-                  <HistoryIcon size={40} className="text-zinc-700" />
-                </div>
-                <h3 className="text-2xl font-black text-zinc-400 uppercase tracking-tighter">Sala Vazia</h3>
-                <p className="text-zinc-600 mt-2 font-medium">Importe o primeiro arquivo .log para ativar o sistema.</p>
-              </div>
-            )}
-          </div>
-        )}
+          {activeTab === 'match-players' && (
+            <div className="space-y-4">
+              {lastMatch ? (
+                <TableCard
+                  title="Destaques / MVPs"
+                  icon={<Sword size={20} />}
+                  data={matchMVPs}
+                  columns={[
+                    { header: 'POS', accessor: (_, idx) => <span className="text-zinc-600 font-black">#{idx + 1}</span>, align: 'center', width: '45px' },
+                    { header: 'JOGADOR', accessor: (p) => <span className="font-bold text-zinc-100">{p.name}</span> },
+                    { header: 'TIME', accessor: (p) => <span className="text-[9px] font-black uppercase text-zinc-600 truncate">{p.teamName}</span> },
+                    { header: '% TIME', accessor: (p) => <span className="text-[10px] text-zinc-600 font-black">{p.participation}%</span>, align: 'center', width: '60px' },
+                    { header: 'K', accessor: (p) => <span className="font-black text-yellow-400 text-lg">{p.kills}</span>, align: 'center', width: '80px' },
+                  ]}
+                />
+              ) : (
+                <EmptyState icon={<Users />} text="Importe um log para ver os MVPs" />
+              )}
+            </div>
+          )}
 
-        {activeTab === 'maps' && (
-          <MapPicker />
-        )}
+          {activeTab === 'maps' && <MapPicker />}
+        </div>
       </main>
 
-      <footer className="fixed bottom-0 left-0 right-0 bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-800/50 py-4 z-50">
+      <footer className="fixed bottom-0 left-0 right-0 bg-zinc-950/90 backdrop-blur-xl border-t border-zinc-800/50 py-3 z-50">
         <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-          <p className="text-[10px] text-zinc-500 uppercase tracking-[0.4em] font-black">
-            TEAM SOLID <span className="text-yellow-500/50">ANALYSIS TOOL</span>
+          <p className="text-[9px] text-zinc-600 uppercase tracking-[0.4em] font-black">
+            TEAM SOLID <span className="text-yellow-500/30 underline">ANALYTICS v3</span>
           </p>
-          <div className="flex gap-4 opacity-30 hover:opacity-100 transition-opacity">
-            <div className="w-2 h-2 rounded-full bg-yellow-500 animate-ping" />
-            <span className="text-[10px] text-zinc-500 font-black uppercase tracking-widest leading-none">Sistema Online</span>
+          <div className="hidden md:flex gap-4 opacity-40">
+             <span className="text-[9px] text-zinc-600 font-black uppercase tracking-widest">Calculando rendimento acumulado no ranking geral</span>
           </div>
         </div>
       </footer>
     </div>
   );
 };
+
+const EmptyState = ({ icon, text }: { icon: React.ReactNode, text: string }) => (
+  <div className="flex flex-col items-center justify-center py-24 bg-zinc-900/10 rounded-[2.5rem] border-2 border-dashed border-zinc-800/30">
+    <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center border border-zinc-800 mb-4 text-zinc-700">
+      {React.cloneElement(icon as React.ReactElement, { size: 24 })}
+    </div>
+    <h3 className="text-sm font-black text-zinc-600 uppercase tracking-widest">{text}</h3>
+  </div>
+);
 
 export default App;

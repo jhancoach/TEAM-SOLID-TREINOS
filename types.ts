@@ -24,8 +24,10 @@ export interface GlobalTeamStats {
   teamName: string;
   matchesPlayed: number;
   totalKills: number;
+  totalRankPoints: number;
   totalPoints: number;
   averagePoints: number;
+  totalBooyahs: number;
 }
 
 export interface GlobalPlayerStats {

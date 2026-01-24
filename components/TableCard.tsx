@@ -7,6 +7,7 @@ interface Column<T> {
   header: string;
   accessor: (item: T, index: number) => React.ReactNode;
   align?: 'left' | 'center' | 'right';
+  width?: string;
 }
 
 interface TableCardProps<T> {
@@ -51,56 +52,51 @@ export const TableCard = <T,>({ title, subtitle, data, columns, icon }: TableCar
   return (
     <div 
       ref={cardRef}
-      className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden backdrop-blur-sm transition-all hover:border-yellow-500/30 shadow-xl"
+      className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden backdrop-blur-sm transition-all hover:border-yellow-500/30 shadow-xl flex flex-col h-full"
     >
-      <div className="p-6 border-b border-zinc-800 flex items-center justify-between bg-gradient-to-r from-zinc-900 to-transparent">
-        <div className="flex-1">
-          <h3 className="text-xl font-bold text-white flex items-center gap-2">
-            {icon && <span className="text-yellow-400">{icon}</span>}
-            {title}
+      <div className="p-4 md:p-5 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/80 gap-4">
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base md:text-lg font-black text-white flex items-center gap-2 truncate uppercase tracking-tighter">
+            {icon && <span className="text-yellow-400 flex-shrink-0">{icon}</span>}
+            <span className="truncate">{title}</span>
           </h3>
-          {subtitle && <p className="text-sm text-zinc-400 mt-1">{subtitle}</p>}
+          {subtitle && <p className="text-[9px] text-zinc-500 mt-0.5 uppercase font-black tracking-[0.2em] truncate">{subtitle}</p>}
         </div>
         
-        <div className="flex items-center gap-3">
-          <div className="hidden lg:block px-3 py-1 bg-zinc-800/50 rounded-full text-[10px] font-bold uppercase tracking-wider text-zinc-400 border border-zinc-700">
-            {data.length} ITENS
-          </div>
-          
+        <div className="flex items-center gap-2 flex-shrink-0" data-html2canvas-ignore>
           <button 
             onClick={handleCapture}
             disabled={isCapturing || data.length === 0}
             className={`
-              flex items-center gap-2 px-3 py-2 rounded-xl border transition-all active:scale-95
+              flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all active:scale-95
               ${data.length === 0 
-                ? 'bg-zinc-800/30 border-zinc-800 text-zinc-600 cursor-not-allowed' 
-                : 'bg-zinc-800 border-zinc-700 text-zinc-300 hover:text-yellow-400 hover:border-yellow-500/50 shadow-lg'}
+                ? 'bg-zinc-800/30 border-zinc-800 text-zinc-700 cursor-not-allowed' 
+                : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-yellow-400 hover:border-yellow-500/50 shadow-lg'}
             `}
-            title="Salvar Tabela como Imagem"
-            data-html2canvas-ignore
           >
             {isCapturing ? (
-              <Loader2 size={16} className="animate-spin" />
+              <Loader2 size={12} className="animate-spin" />
             ) : (
               <>
-                <Camera size={16} />
-                <span className="text-[10px] font-black tracking-tighter uppercase">Print</span>
+                <Camera size={12} />
+                <span className="text-[9px] font-black tracking-widest uppercase">Print</span>
               </>
             )}
           </button>
         </div>
       </div>
       
-      <div className="overflow-x-auto">
-        <table className="w-full text-left">
+      <div className="w-full">
+        <table className="w-full text-left border-collapse table-fixed">
           <thead>
-            <tr className="bg-zinc-950/50 text-nowrap">
+            <tr className="bg-zinc-950/80">
               {columns.map((col, idx) => (
                 <th 
                   key={idx} 
-                  className={`px-6 py-4 text-[10px] font-black text-yellow-500/80 uppercase tracking-[0.15em] border-b border-zinc-800 ${
+                  className={`px-2 py-3 text-[9px] font-black text-zinc-500 uppercase tracking-widest border-b border-zinc-800 ${
                     col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
                   }`}
+                  style={{ width: col.width || 'auto' }}
                 >
                   {col.header}
                 </th>
@@ -110,13 +106,13 @@ export const TableCard = <T,>({ title, subtitle, data, columns, icon }: TableCar
           <tbody className="divide-y divide-zinc-800/30">
             {data.length > 0 ? (
               data.map((item, rowIdx) => (
-                <tr key={rowIdx} className="hover:bg-yellow-500/[0.02] transition-colors group">
+                <tr key={rowIdx} className="hover:bg-yellow-500/[0.02] transition-colors">
                   {columns.map((col, colIdx) => (
                     <td 
                       key={colIdx} 
-                      className={`px-6 py-4 text-sm font-medium whitespace-nowrap ${
+                      className={`px-2 py-3 text-[12px] font-bold whitespace-nowrap ${
                         col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
-                      } ${rowIdx === 0 && colIdx === 0 ? 'text-yellow-400 font-black' : 'text-zinc-300'}`}
+                      } ${rowIdx === 0 && colIdx === 1 ? 'text-yellow-400' : 'text-zinc-400'}`}
                     >
                       {col.accessor(item, rowIdx)}
                     </td>
@@ -125,11 +121,8 @@ export const TableCard = <T,>({ title, subtitle, data, columns, icon }: TableCar
               ))
             ) : (
               <tr>
-                <td colSpan={columns.length} className="px-6 py-20 text-center">
-                  <div className="flex flex-col items-center gap-2 opacity-20">
-                    <Camera size={40} className="text-zinc-500" />
-                    <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Sem dados para exibir</span>
-                  </div>
+                <td colSpan={columns.length} className="px-6 py-20 text-center text-[10px] font-black uppercase text-zinc-700 tracking-widest">
+                  Aguardando dados...
                 </td>
               </tr>
             )}
