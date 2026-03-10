@@ -150,7 +150,7 @@ const App: React.FC = () => {
         </nav>
 
         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
-          {activeTab === 'global-teams' && (
+          <div className={activeTab === 'global-teams' ? 'block' : 'hidden'}>
             <TableCard title="Ranking Geral" subtitle="Estatísticas Acumuladas" icon={<Trophy size={20} />} data={getGlobalTeamStats()}
               columns={[
                 { header: 'POS', accessor: (_, idx) => <span className="text-zinc-600 font-black">#{idx + 1}</span>, align: 'center', width: '45px' },
@@ -164,9 +164,9 @@ const App: React.FC = () => {
                 { header: 'PONTOS', accessor: (t) => <span className="font-black text-yellow-400 text-lg tracking-tighter">{t.totalPoints}</span>, align: 'center', width: '75px' },
               ]}
             />
-          )}
+          </div>
 
-          {activeTab === 'global-players' && (
+          <div className={activeTab === 'global-players' ? 'block' : 'hidden'}>
             <TableCard title="Top Fraggers" subtitle="Líderes de Abates" icon={<Users size={20} />} data={getGlobalPlayerStats()}
               columns={[
                 { header: 'POS', accessor: (_, idx) => <span className="text-zinc-600 font-black">#{idx + 1}</span>, align: 'center', width: '45px' },
@@ -177,9 +177,9 @@ const App: React.FC = () => {
                 { header: 'K', accessor: (p) => <span className="font-black text-yellow-400 text-lg">{p.totalKills}</span>, align: 'center', width: '80px' },
               ]}
             />
-          )}
+          </div>
 
-          {activeTab === 'match-teams' && (
+          <div className={activeTab === 'match-teams' ? 'block' : 'hidden'}>
             <div className="space-y-4">
               {lastMatch ? (
                 <>
@@ -201,11 +201,11 @@ const App: React.FC = () => {
                     ]}
                   />
                 </>
-              ) : <EmptyState icon={<HistoryIcon />} text="Nenhum dado importado" />}
+              ) : <EmptyState icon={<HistoryIcon size={20} />} text="Nenhum dado importado" />}
             </div>
-          )}
+          </div>
 
-          {activeTab === 'match-history' && (
+          <div className={activeTab === 'match-history' ? 'block' : 'hidden'}>
             <div className="space-y-12">
               {matches.length > 0 ? (
                 [...matches].reverse().map((match, idx) => (
@@ -234,12 +234,12 @@ const App: React.FC = () => {
                     />
                   </div>
                 ))
-              ) : <EmptyState icon={<HistoryIcon />} text="Histórico vazio" />}
+              ) : <EmptyState icon={<HistoryIcon size={20} />} text="Histórico vazio" />}
             </div>
-          )}
+          </div>
 
-          {activeTab === 'match-players' && (
-            lastMatch ? <TableCard title="MVPs da Rodada" icon={<Sword size={20} />} data={matchMVPs}
+          <div className={activeTab === 'match-players' ? 'block' : 'hidden'}>
+            {lastMatch ? <TableCard title="MVPs da Rodada" icon={<Sword size={20} />} data={matchMVPs}
               columns={[
                 { header: 'POS', accessor: (_, idx) => <span className="text-zinc-600 font-black">#{idx + 1}</span>, align: 'center', width: '45px' },
                 { header: 'JOGADOR', accessor: (p) => <span className="font-bold text-zinc-100">{p.name}</span> },
@@ -247,10 +247,12 @@ const App: React.FC = () => {
                 { header: '% TIME', accessor: (p) => p.participation + '%', align: 'center', width: '60px' },
                 { header: 'K', accessor: (p) => <span className="font-black text-yellow-400 text-lg">{p.kills}</span>, align: 'center', width: '80px' },
               ]}
-            /> : <EmptyState icon={<Users />} text="Sem destaques disponíveis" />
-          )}
+            /> : <EmptyState icon={<Users size={20} />} text="Sem destaques disponíveis" />}
+          </div>
           
-          {activeTab === 'maps' && <MapPicker />}
+          <div className={activeTab === 'maps' ? 'block' : 'hidden'}>
+            <MapPicker />
+          </div>
         </div>
       </main>
 
