@@ -53,9 +53,9 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
       </h3>
       
       {/* Banner shape */}
-      <div className={`relative w-32 md:w-44 ${height} bg-secondary border-2 ${colorClass} shadow-[0_0_30px_rgba(0,0,0,0.5)] flex flex-col items-center justify-start pt-6 pb-8 px-3`}
+      <div className={`relative w-36 md:w-48 ${height} bg-secondary border-2 ${colorClass} shadow-[0_0_30px_rgba(0,0,0,0.5)] flex flex-col items-center justify-start pt-6 pb-12 px-3`}
            style={{
-             clipPath: 'polygon(0% 0%, 100% 0%, 100% 85%, 50% 100%, 0% 85%)'
+             clipPath: 'polygon(0% 0%, 100% 0%, 100% 92%, 50% 100%, 0% 92%)'
            }}>
         
         {/* Top rod decoration */}
@@ -66,35 +66,35 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
 
         {player ? (
           <>
-            <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full bg-primary border-2 border-tertiary flex items-center justify-center mb-3 shadow-inner ${isCenter ? 'md:w-20 md:h-20' : ''}`}>
+            <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full bg-primary border-2 border-tertiary flex items-center justify-center mb-3 shadow-inner shrink-0 ${isCenter ? 'md:w-20 md:h-20' : ''}`}>
               <Crosshair size={isCenter ? 32 : 24} className={colorClass.replace('border-', 'text-')} />
             </div>
             
             <h4 className={`font-heading font-bold text-textMain uppercase tracking-tighter text-center mb-1 break-all line-clamp-2 ${isCenter ? 'text-lg md:text-xl' : 'text-base md:text-lg'}`}>
               {player.playerName}
             </h4>
-            <p className="text-[9px] md:text-[10px] text-textMuted font-bold uppercase tracking-widest mb-4 truncate w-full text-center">
+            <p className="text-[9px] md:text-[10px] text-textMuted font-bold uppercase tracking-widest mb-3 truncate w-full text-center">
               {player.teamName}
             </p>
             
             <div className="w-full space-y-2 mt-auto">
-              <div className="bg-primary/50 rounded-xl p-2 border border-tertiary/50 flex flex-col items-center">
+              <div className="bg-primary/50 rounded-xl p-1.5 md:p-2 border border-tertiary/50 flex flex-col items-center">
                 <span className="text-[9px] text-textMuted font-bold uppercase tracking-widest mb-0.5">Kills</span>
-                <span className={`text-xl md:text-2xl font-bold ${colorClass.replace('border-', 'text-')}`}>{player.totalKills}</span>
+                <span className={`text-lg md:text-2xl font-bold ${colorClass.replace('border-', 'text-')}`}>{player.totalKills}</span>
               </div>
               
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-primary/50 rounded-xl p-2 border border-tertiary/50 flex flex-col items-center">
-                  <span className="text-[8px] text-textMuted font-bold uppercase tracking-widest mb-0.5 flex items-center gap-1">
+              <div className="grid grid-cols-2 gap-1.5 md:gap-2">
+                <div className="bg-primary/50 rounded-xl p-1.5 md:p-2 border border-tertiary/50 flex flex-col items-center">
+                  <span className="text-[7px] md:text-[8px] text-textMuted font-bold uppercase tracking-widest mb-0.5 flex items-center gap-1">
                     <Hash size={8} /> Quedas
                   </span>
-                  <span className="text-sm md:text-base font-bold text-textMain">{player.matchesPlayed}</span>
+                  <span className="text-xs md:text-base font-bold text-textMain">{player.matchesPlayed}</span>
                 </div>
-                <div className="bg-primary/50 rounded-xl p-2 border border-tertiary/50 flex flex-col items-center">
-                  <span className="text-[8px] text-textMuted font-bold uppercase tracking-widest mb-0.5 flex items-center gap-1">
+                <div className="bg-primary/50 rounded-xl p-1.5 md:p-2 border border-tertiary/50 flex flex-col items-center">
+                  <span className="text-[7px] md:text-[8px] text-textMuted font-bold uppercase tracking-widest mb-0.5 flex items-center gap-1">
                     <Activity size={8} /> Média
                   </span>
-                  <span className="text-sm md:text-base font-bold text-textMain">{player.averageKills}</span>
+                  <span className="text-xs md:text-base font-bold text-textMain">{player.averageKills}</span>
                 </div>
               </div>
             </div>
@@ -123,7 +123,7 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
 
       <div 
         ref={bannerRef}
-        className="relative bg-primary rounded-[2.5rem] border border-tertiary/50 overflow-hidden p-6 md:p-12 flex flex-col items-center min-h-[600px]"
+        className="relative bg-primary rounded-[2.5rem] border border-tertiary/50 overflow-hidden p-6 md:p-12 flex flex-col items-center min-h-[700px]"
       >
         {/* Background effects */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-tertiary/20 via-secondary/40 to-primary"></div>
@@ -146,7 +146,7 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
             <BannerItem 
               player={top5[3]} 
               position={4} 
-              height="h-[300px] md:h-[340px]" 
+              height="h-[320px] md:h-[360px]" 
               colorClass="border-tertiary" 
               delay="delay-300"
             />
@@ -157,7 +157,7 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
             <BannerItem 
               player={top5[1]} 
               position={2} 
-              height="h-[340px] md:h-[380px]" 
+              height="h-[360px] md:h-[400px]" 
               colorClass="border-textMuted" 
               delay="delay-150"
             />
@@ -168,7 +168,7 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
             <BannerItem 
               player={top5[0]} 
               position={1} 
-              height="h-[380px] md:h-[440px]" 
+              height="h-[400px] md:h-[460px]" 
               colorClass="border-accent" 
               delay="delay-0"
               isCenter={true}
@@ -180,7 +180,7 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
             <BannerItem 
               player={top5[2]} 
               position={3} 
-              height="h-[320px] md:h-[360px]" 
+              height="h-[340px] md:h-[380px]" 
               colorClass="border-accent/60" 
               delay="delay-200"
             />
@@ -191,7 +191,7 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
             <BannerItem 
               player={top5[4]} 
               position={5} 
-              height="h-[280px] md:h-[320px]" 
+              height="h-[300px] md:h-[340px]" 
               colorClass="border-tertiary/60" 
               delay="delay-500"
             />

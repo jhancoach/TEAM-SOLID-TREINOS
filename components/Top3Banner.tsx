@@ -57,9 +57,9 @@ export const Top3Banner: React.FC<Top3BannerProps> = ({ data }) => {
       </h3>
       
       {/* Banner shape */}
-      <div className={`relative w-40 md:w-56 ${height} bg-secondary border-2 ${colorClass} shadow-[0_0_30px_rgba(0,0,0,0.5)] flex flex-col items-center justify-start pt-8 pb-12 px-4`}
+      <div className={`relative w-44 md:w-64 ${height} bg-secondary border-2 ${colorClass} shadow-[0_0_30px_rgba(0,0,0,0.5)] flex flex-col items-center justify-start pt-8 pb-16 px-4`}
            style={{
-             clipPath: 'polygon(0% 0%, 100% 0%, 100% 85%, 50% 100%, 0% 85%)'
+             clipPath: 'polygon(0% 0%, 100% 0%, 100% 92%, 50% 100%, 0% 92%)'
            }}>
         
         {/* Top rod decoration */}
@@ -70,25 +70,25 @@ export const Top3Banner: React.FC<Top3BannerProps> = ({ data }) => {
 
         {team ? (
           <>
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary border-2 border-tertiary flex items-center justify-center mb-4 shadow-inner">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-primary border-2 border-tertiary flex items-center justify-center mb-4 shadow-inner shrink-0">
               <Trophy size={32} className={colorClass.replace('border-', 'text-')} />
             </div>
             
-            <h4 className="text-xl md:text-2xl font-heading font-bold text-textMain uppercase tracking-tighter text-center mb-6 break-all line-clamp-2">
+            <h4 className="text-lg md:text-2xl font-heading font-bold text-textMain uppercase tracking-tighter text-center mb-4 break-all line-clamp-2">
               {team.teamName}
             </h4>
             
-            <div className="w-full space-y-3 mt-auto">
-              <div className="bg-primary/50 rounded-xl p-3 border border-tertiary/50 flex flex-col items-center">
-                <span className="text-[10px] text-textMuted font-bold uppercase tracking-widest mb-1">Pontos</span>
-                <span className={`text-2xl md:text-3xl font-bold ${colorClass.replace('border-', 'text-')}`}>{team.totalPoints}</span>
+            <div className="w-full grid grid-cols-2 gap-2 mt-auto">
+              <div className="bg-primary/50 rounded-xl p-2 border border-tertiary/50 flex flex-col items-center justify-center">
+                <span className="text-[9px] md:text-[10px] text-textMuted font-bold uppercase tracking-widest mb-0.5">Pontos</span>
+                <span className={`text-xl md:text-2xl font-bold ${colorClass.replace('border-', 'text-')}`}>{team.totalPoints}</span>
               </div>
               
-              <div className="bg-primary/50 rounded-xl p-3 border border-tertiary/50 flex flex-col items-center">
-                <span className="text-[10px] text-textMuted font-bold uppercase tracking-widest mb-1 flex items-center gap-1">
+              <div className="bg-primary/50 rounded-xl p-2 border border-tertiary/50 flex flex-col items-center justify-center">
+                <span className="text-[9px] md:text-[10px] text-textMuted font-bold uppercase tracking-widest mb-0.5 flex items-center gap-1">
                   <Crosshair size={10} /> Abates
                 </span>
-                <span className="text-lg md:text-xl font-bold text-textMain">{team.totalKills}</span>
+                <span className="text-xl md:text-2xl font-bold text-textMain">{team.totalKills}</span>
               </div>
             </div>
           </>
