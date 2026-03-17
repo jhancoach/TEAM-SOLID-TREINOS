@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
 import { 
-  Trophy, Upload, History as HistoryIcon, Users, TrendingUp, Calendar, Sword, Shield, Trash2, Zap, Map as MapIcon, Crown, RotateCcw, UserCheck, Share2, Globe, Cloud, Loader2, Copy, ListOrdered
+  Trophy, Upload, History as HistoryIcon, Users, TrendingUp, Calendar, Sword, Shield, Trash2, Zap, Map as MapIcon, Crown, RotateCcw, UserCheck, Share2, Globe, Cloud, Loader2, Copy, ListOrdered, Crosshair
 } from 'lucide-react';
 import { useMatchStore } from './store';
 import { parseLogFile } from './parser';
 import { TableCard } from './components/TableCard';
 import { MapPicker } from './components/MapPicker';
+import { Top3Banner } from './components/Top3Banner';
+import { Top5FraggersBanner } from './components/Top5FraggersBanner';
 import { Player, Team } from './types';
 
 interface MatchMVP extends Player {
@@ -15,7 +17,7 @@ interface MatchMVP extends Player {
   participation: string;
 }
 
-type TabType = 'global-teams' | 'global-players' | 'match-teams' | 'match-players' | 'match-history' | 'maps';
+type TabType = 'global-teams' | 'top3' | 'global-players' | 'top5-fraggers' | 'match-teams' | 'match-players' | 'match-history' | 'maps';
 
 const App: React.FC = () => {
   const { matches, addMatch, resetMatches, clearData, getGlobalTeamStats, getGlobalPlayerStats, createRoom, roomID, isLoading } = useMatchStore();
@@ -132,7 +134,9 @@ const App: React.FC = () => {
         <nav className="flex bg-zinc-900/50 p-1.5 rounded-3xl w-fit mx-auto mb-12 border border-zinc-800 backdrop-blur-sm overflow-x-auto max-w-full no-scrollbar">
           {[
             { id: 'global-teams', label: 'Ranking Geral', icon: <Trophy size={14} /> },
+            { id: 'top3', label: 'Top 3', icon: <Crown size={14} /> },
             { id: 'global-players', label: 'Top Fraggers', icon: <Users size={14} /> },
+            { id: 'top5-fraggers', label: 'Top 5 Fraggers', icon: <Crosshair size={14} /> },
             { id: 'match-teams', label: 'Última Rodada', icon: <TrendingUp size={14} /> },
             { id: 'match-players', label: 'MVPs Rodada', icon: <UserCheck size={14} /> },
             { id: 'match-history', label: 'Histórico', icon: <ListOrdered size={14} /> },
@@ -166,6 +170,10 @@ const App: React.FC = () => {
             />
           </div>
 
+          <div className={activeTab === 'top3' ? 'block' : 'hidden'}>
+            <Top3Banner data={getGlobalTeamStats()} />
+          </div>
+
           <div className={activeTab === 'global-players' ? 'block' : 'hidden'}>
             <TableCard title="Top Fraggers" subtitle="Líderes de Abates" icon={<Users size={20} />} data={getGlobalPlayerStats()}
               columns={[
@@ -177,6 +185,10 @@ const App: React.FC = () => {
                 { header: 'K', accessor: (p) => <span className="font-black text-yellow-400 text-lg">{p.totalKills}</span>, align: 'center', width: '80px' },
               ]}
             />
+          </div>
+
+          <div className={activeTab === 'top5-fraggers' ? 'block' : 'hidden'}>
+            <Top5FraggersBanner data={getGlobalPlayerStats()} />
           </div>
 
           <div className={activeTab === 'match-teams' ? 'block' : 'hidden'}>
