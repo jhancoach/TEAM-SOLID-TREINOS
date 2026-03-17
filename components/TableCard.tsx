@@ -30,7 +30,7 @@ export const TableCard = <T,>({ title, subtitle, data, columns, icon }: TableCar
       await new Promise(resolve => setTimeout(resolve, 150));
       
       const canvas = await html2canvas(cardRef.current, {
-        backgroundColor: '#09090b',
+        backgroundColor: '#2B2E34',
         scale: 2,
         logging: false,
         useCORS: true,
@@ -52,15 +52,15 @@ export const TableCard = <T,>({ title, subtitle, data, columns, icon }: TableCar
   return (
     <div 
       ref={cardRef}
-      className="bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden backdrop-blur-sm transition-all hover:border-yellow-500/30 shadow-xl flex flex-col h-full"
+      className="bg-secondary/50 border border-tertiary rounded-2xl overflow-hidden backdrop-blur-sm transition-all hover:border-accent/30 shadow-xl flex flex-col h-full"
     >
-      <div className="p-4 md:p-5 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/80 gap-4">
+      <div className="p-4 md:p-5 border-b border-tertiary flex items-center justify-between bg-secondary/80 gap-4">
         <div className="flex-1 min-w-0">
-          <h3 className="text-base md:text-lg font-black text-white flex items-center gap-2 truncate uppercase tracking-tighter">
-            {icon && <span className="text-yellow-400 flex-shrink-0">{icon}</span>}
+          <h3 className="text-base md:text-lg font-heading font-bold text-textMain flex items-center gap-2 truncate uppercase tracking-tighter">
+            {icon && <span className="text-accent flex-shrink-0">{icon}</span>}
             <span className="truncate">{title}</span>
           </h3>
-          {subtitle && <p className="text-[9px] text-zinc-500 mt-0.5 uppercase font-black tracking-[0.2em] truncate">{subtitle}</p>}
+          {subtitle && <p className="text-[9px] text-textMuted mt-0.5 uppercase font-bold tracking-[0.2em] truncate">{subtitle}</p>}
         </div>
         
         <div className="flex items-center gap-2 flex-shrink-0" data-html2canvas-ignore>
@@ -70,8 +70,8 @@ export const TableCard = <T,>({ title, subtitle, data, columns, icon }: TableCar
             className={`
               flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all active:scale-95
               ${data.length === 0 
-                ? 'bg-zinc-800/30 border-zinc-800 text-zinc-700 cursor-not-allowed' 
-                : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:text-yellow-400 hover:border-yellow-500/50 shadow-lg'}
+                ? 'bg-tertiary/30 border-tertiary text-tertiary cursor-not-allowed' 
+                : 'bg-tertiary border-tertiary text-textMuted hover:text-accent hover:border-accent/50 shadow-lg'}
             `}
           >
             {isCapturing ? (
@@ -79,7 +79,7 @@ export const TableCard = <T,>({ title, subtitle, data, columns, icon }: TableCar
             ) : (
               <>
                 <Camera size={12} />
-                <span className="text-[9px] font-black tracking-widest uppercase">Print</span>
+                <span className="text-[9px] font-bold tracking-widest uppercase">Print</span>
               </>
             )}
           </button>
@@ -89,11 +89,11 @@ export const TableCard = <T,>({ title, subtitle, data, columns, icon }: TableCar
       <div className="w-full">
         <table className="w-full text-left border-collapse table-fixed">
           <thead>
-            <tr className="bg-zinc-950/80">
+            <tr className="bg-primary/80">
               {columns.map((col, idx) => (
                 <th 
                   key={idx} 
-                  className={`px-2 py-3 text-[9px] font-black text-zinc-500 uppercase tracking-widest border-b border-zinc-800 ${
+                  className={`px-2 py-3 text-[9px] font-bold text-textMuted uppercase tracking-widest border-b border-tertiary ${
                     col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
                   }`}
                   style={{ width: col.width || 'auto' }}
@@ -103,16 +103,16 @@ export const TableCard = <T,>({ title, subtitle, data, columns, icon }: TableCar
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-800/30">
+          <tbody className="divide-y divide-tertiary/30">
             {data.length > 0 ? (
               data.map((item, rowIdx) => (
-                <tr key={rowIdx} className="hover:bg-yellow-500/[0.02] transition-colors">
+                <tr key={rowIdx} className="hover:bg-accent/[0.02] transition-colors">
                   {columns.map((col, colIdx) => (
                     <td 
                       key={colIdx} 
                       className={`px-2 py-3 text-[12px] font-bold whitespace-nowrap ${
                         col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
-                      } ${rowIdx === 0 && colIdx === 1 ? 'text-yellow-400' : 'text-zinc-400'}`}
+                      } ${rowIdx === 0 && colIdx === 1 ? 'text-accent' : 'text-textMuted'}`}
                     >
                       {col.accessor(item, rowIdx)}
                     </td>
@@ -121,7 +121,7 @@ export const TableCard = <T,>({ title, subtitle, data, columns, icon }: TableCar
               ))
             ) : (
               <tr>
-                <td colSpan={columns.length} className="px-6 py-20 text-center text-[10px] font-black uppercase text-zinc-700 tracking-widest">
+                <td colSpan={columns.length} className="px-6 py-20 text-center text-[10px] font-bold uppercase text-tertiary tracking-widest">
                   Aguardando dados...
                 </td>
               </tr>

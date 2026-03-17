@@ -19,7 +19,7 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
     try {
       await new Promise(resolve => setTimeout(resolve, 150));
       const canvas = await html2canvas(bannerRef.current, {
-        backgroundColor: '#09090b',
+        backgroundColor: '#2B2E34',
         scale: 2,
         logging: false,
         useCORS: true,
@@ -39,69 +39,69 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
 
   if (data.length === 0) {
     return (
-      <div className="bg-zinc-900/30 border-2 border-dashed border-zinc-800 rounded-3xl p-20 text-center">
-        <Users className="mx-auto text-zinc-700 mb-4" size={48} />
-        <p className="text-zinc-500 font-black uppercase tracking-widest text-xs">Aguardando dados para o Top 5</p>
+      <div className="bg-secondary/30 border-2 border-dashed border-tertiary rounded-3xl p-20 text-center">
+        <Users className="mx-auto text-tertiary mb-4" size={48} />
+        <p className="text-textMuted font-bold uppercase tracking-widest text-xs">Aguardando dados para o Top 5</p>
       </div>
     );
   }
 
   const BannerItem = ({ player, position, height, colorClass, delay, isCenter = false }: { player?: GlobalPlayerStats, position: number, height: string, colorClass: string, delay: string, isCenter?: boolean }) => (
     <div className={`flex flex-col items-center animate-in fade-in slide-in-from-bottom-8 ${delay} duration-700`}>
-      <h3 className="text-white font-black text-sm md:text-base mb-2 uppercase tracking-widest drop-shadow-md">
+      <h3 className="text-textMain font-heading font-bold text-sm md:text-base mb-2 uppercase tracking-widest drop-shadow-md">
         {position}º LUGAR
       </h3>
       
       {/* Banner shape */}
-      <div className={`relative w-32 md:w-44 ${height} bg-zinc-900 border-2 ${colorClass} shadow-[0_0_30px_rgba(0,0,0,0.5)] flex flex-col items-center justify-start pt-6 pb-8 px-3`}
+      <div className={`relative w-32 md:w-44 ${height} bg-secondary border-2 ${colorClass} shadow-[0_0_30px_rgba(0,0,0,0.5)] flex flex-col items-center justify-start pt-6 pb-8 px-3`}
            style={{
              clipPath: 'polygon(0% 0%, 100% 0%, 100% 85%, 50% 100%, 0% 85%)'
            }}>
         
         {/* Top rod decoration */}
-        <div className="absolute top-0 left-0 right-0 h-2 bg-zinc-950 border-b border-zinc-800 flex items-center justify-between px-1">
-          <div className="w-2 h-2 rounded-full bg-zinc-700 -ml-1"></div>
-          <div className="w-2 h-2 rounded-full bg-zinc-700 -mr-1"></div>
+        <div className="absolute top-0 left-0 right-0 h-2 bg-primary border-b border-tertiary flex items-center justify-between px-1">
+          <div className="w-2 h-2 rounded-full bg-tertiary -ml-1"></div>
+          <div className="w-2 h-2 rounded-full bg-tertiary -mr-1"></div>
         </div>
 
         {player ? (
           <>
-            <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full bg-zinc-950 border-2 border-zinc-800 flex items-center justify-center mb-3 shadow-inner ${isCenter ? 'md:w-20 md:h-20' : ''}`}>
+            <div className={`w-12 h-12 md:w-16 md:h-16 rounded-full bg-primary border-2 border-tertiary flex items-center justify-center mb-3 shadow-inner ${isCenter ? 'md:w-20 md:h-20' : ''}`}>
               <Crosshair size={isCenter ? 32 : 24} className={colorClass.replace('border-', 'text-')} />
             </div>
             
-            <h4 className={`font-black text-white uppercase tracking-tighter text-center mb-1 break-all line-clamp-2 ${isCenter ? 'text-lg md:text-xl' : 'text-base md:text-lg'}`}>
+            <h4 className={`font-heading font-bold text-textMain uppercase tracking-tighter text-center mb-1 break-all line-clamp-2 ${isCenter ? 'text-lg md:text-xl' : 'text-base md:text-lg'}`}>
               {player.playerName}
             </h4>
-            <p className="text-[9px] md:text-[10px] text-zinc-500 font-black uppercase tracking-widest mb-4 truncate w-full text-center">
+            <p className="text-[9px] md:text-[10px] text-textMuted font-bold uppercase tracking-widest mb-4 truncate w-full text-center">
               {player.teamName}
             </p>
             
             <div className="w-full space-y-2 mt-auto">
-              <div className="bg-zinc-950/50 rounded-xl p-2 border border-zinc-800/50 flex flex-col items-center">
-                <span className="text-[9px] text-zinc-500 font-black uppercase tracking-widest mb-0.5">Kills</span>
-                <span className={`text-xl md:text-2xl font-black ${colorClass.replace('border-', 'text-')}`}>{player.totalKills}</span>
+              <div className="bg-primary/50 rounded-xl p-2 border border-tertiary/50 flex flex-col items-center">
+                <span className="text-[9px] text-textMuted font-bold uppercase tracking-widest mb-0.5">Kills</span>
+                <span className={`text-xl md:text-2xl font-bold ${colorClass.replace('border-', 'text-')}`}>{player.totalKills}</span>
               </div>
               
               <div className="grid grid-cols-2 gap-2">
-                <div className="bg-zinc-950/50 rounded-xl p-2 border border-zinc-800/50 flex flex-col items-center">
-                  <span className="text-[8px] text-zinc-500 font-black uppercase tracking-widest mb-0.5 flex items-center gap-1">
+                <div className="bg-primary/50 rounded-xl p-2 border border-tertiary/50 flex flex-col items-center">
+                  <span className="text-[8px] text-textMuted font-bold uppercase tracking-widest mb-0.5 flex items-center gap-1">
                     <Hash size={8} /> Quedas
                   </span>
-                  <span className="text-sm md:text-base font-black text-zinc-300">{player.matchesPlayed}</span>
+                  <span className="text-sm md:text-base font-bold text-textMain">{player.matchesPlayed}</span>
                 </div>
-                <div className="bg-zinc-950/50 rounded-xl p-2 border border-zinc-800/50 flex flex-col items-center">
-                  <span className="text-[8px] text-zinc-500 font-black uppercase tracking-widest mb-0.5 flex items-center gap-1">
+                <div className="bg-primary/50 rounded-xl p-2 border border-tertiary/50 flex flex-col items-center">
+                  <span className="text-[8px] text-textMuted font-bold uppercase tracking-widest mb-0.5 flex items-center gap-1">
                     <Activity size={8} /> Média
                   </span>
-                  <span className="text-sm md:text-base font-black text-zinc-300">{player.averageKills}</span>
+                  <span className="text-sm md:text-base font-bold text-textMain">{player.averageKills}</span>
                 </div>
               </div>
             </div>
           </>
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <span className="text-zinc-700 font-black uppercase tracking-widest text-xs">Vazio</span>
+            <span className="text-tertiary font-bold uppercase tracking-widest text-xs">Vazio</span>
           </div>
         )}
       </div>
@@ -114,7 +114,7 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
         <button 
           onClick={handleCapture}
           disabled={isCapturing}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 font-black text-[10px] uppercase tracking-widest hover:text-yellow-400 hover:border-yellow-500/50 transition-all active:scale-95 shadow-xl"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-secondary border border-tertiary text-textMuted font-bold text-[10px] uppercase tracking-widest hover:text-accent hover:border-accent/50 transition-all active:scale-95 shadow-xl"
         >
           {isCapturing ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} />}
           {isCapturing ? 'CAPTURANDO...' : 'SALVAR BANNER'}
@@ -123,18 +123,18 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
 
       <div 
         ref={bannerRef}
-        className="relative bg-[#09090b] rounded-[2.5rem] border border-zinc-800/50 overflow-hidden p-6 md:p-12 flex flex-col items-center min-h-[600px]"
+        className="relative bg-primary rounded-[2.5rem] border border-tertiary/50 overflow-hidden p-6 md:p-12 flex flex-col items-center min-h-[600px]"
       >
         {/* Background effects */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-800/20 via-zinc-900/40 to-[#09090b]"></div>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-tertiary/20 via-secondary/40 to-primary"></div>
         <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-5 mix-blend-overlay"></div>
         
         {/* Header */}
         <div className="relative z-10 text-center mb-12">
-          <h2 className="text-4xl md:text-6xl font-black text-white italic tracking-tighter uppercase drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
+          <h2 className="text-4xl md:text-6xl font-heading font-bold text-textMain italic tracking-tighter uppercase drop-shadow-[0_0_15px_rgba(255,255,255,0.1)]">
             TOP 5
           </h2>
-          <h3 className="text-2xl md:text-4xl font-black text-zinc-400 uppercase tracking-widest drop-shadow-[0_0_15px_rgba(161,161,170,0.3)] mt-[-5px]">
+          <h3 className="text-2xl md:text-4xl font-heading font-bold text-textMuted uppercase tracking-widest drop-shadow-[0_0_15px_rgba(161,161,170,0.3)] mt-[-5px]">
             FRAGGERS
           </h3>
         </div>
@@ -147,7 +147,7 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
               player={top5[3]} 
               position={4} 
               height="h-[300px] md:h-[340px]" 
-              colorClass="border-zinc-600" 
+              colorClass="border-tertiary" 
               delay="delay-300"
             />
           </div>
@@ -158,7 +158,7 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
               player={top5[1]} 
               position={2} 
               height="h-[340px] md:h-[380px]" 
-              colorClass="border-zinc-400" 
+              colorClass="border-textMuted" 
               delay="delay-150"
             />
           </div>
@@ -169,7 +169,7 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
               player={top5[0]} 
               position={1} 
               height="h-[380px] md:h-[440px]" 
-              colorClass="border-yellow-400" 
+              colorClass="border-accent" 
               delay="delay-0"
               isCenter={true}
             />
@@ -181,7 +181,7 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
               player={top5[2]} 
               position={3} 
               height="h-[320px] md:h-[360px]" 
-              colorClass="border-amber-700" 
+              colorClass="border-accent/60" 
               delay="delay-200"
             />
           </div>
@@ -192,7 +192,7 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
               player={top5[4]} 
               position={5} 
               height="h-[280px] md:h-[320px]" 
-              colorClass="border-zinc-700" 
+              colorClass="border-tertiary/60" 
               delay="delay-500"
             />
           </div>
@@ -200,10 +200,10 @@ export const Top5FraggersBanner: React.FC<Top5FraggersBannerProps> = ({ data }) 
 
         {/* Footer */}
         <div className="relative z-10 mt-16 text-center">
-          <p className="text-zinc-500 font-bold uppercase tracking-widest text-xs md:text-sm">
+          <p className="text-textMuted font-bold uppercase tracking-widest text-xs md:text-sm">
             OS MAIORES ABATEDORES
           </p>
-          <p className="text-zinc-300 font-black uppercase tracking-widest text-base md:text-lg">
+          <p className="text-textMain font-heading font-bold uppercase tracking-widest text-base md:text-lg">
             DO TREINO !!!
           </p>
         </div>
