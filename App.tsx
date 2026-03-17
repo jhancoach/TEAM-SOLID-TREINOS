@@ -160,19 +160,56 @@ const App: React.FC = () => {
 
         <div className="animate-in fade-in slide-in-from-bottom-8 duration-700">
           <div className={activeTab === 'global-teams' ? 'block' : 'hidden'}>
-            <TableCard title="Ranking Geral" subtitle="Estatísticas Acumuladas" icon={<Trophy size={20} />} data={getGlobalTeamStats()}
-              columns={[
-                { header: 'POS', accessor: (_, idx) => <span className="text-tertiary font-bold">#{idx + 1}</span>, align: 'center', width: '45px' },
-                { header: 'TIME', accessor: (t) => <span className="uppercase font-bold text-textMain text-[12px]">{t.teamName}</span> },
-                { header: 'PJ', accessor: (t) => t.matchesPlayed, align: 'center', width: '40px' },
-                { header: 'B', accessor: (t) => t.totalBooyahs, align: 'center', width: '40px' },
-                { header: 'K', accessor: (t) => t.totalKills, align: 'center', width: '40px' },
-                { header: '% ABTS', accessor: (t) => (t.totalPoints > 0 ? ((t.totalKills / t.totalPoints) * 100).toFixed(0) : 0) + '%', align: 'center', width: '55px' },
-                { header: 'PTS POS', accessor: (t) => t.totalRankPoints, align: 'center', width: '60px' },
-                { header: '% POS', accessor: (t) => (t.totalPoints > 0 ? ((t.totalRankPoints / t.totalPoints) * 100).toFixed(0) : 0) + '%', align: 'center', width: '55px' },
-                { header: 'PONTOS', accessor: (t) => <span className="font-bold text-accent text-lg tracking-tighter">{t.totalPoints}</span>, align: 'center', width: '75px' },
-              ]}
-            />
+            {(() => {
+              const data = getGlobalTeamStats();
+              return (
+                <TableCard title="Ranking Geral" subtitle="Estatísticas Acumuladas" icon={<Trophy size={20} />} data={data}
+                  columns={[
+                    { 
+                      header: 'POS', 
+                      accessor: (_, idx) => {
+                        let colorClass = "text-textMuted";
+                        if (idx < 3) colorClass = "text-accent";
+                        if (idx >= data.length - 2 && data.length > 3) colorClass = "text-red-500";
+                        return <span className={`${colorClass} font-bold`}>#{idx + 1}</span>;
+                      }, 
+                      align: 'center', 
+                      width: '45px' 
+                    },
+                    { 
+                      header: 'TIME', 
+                      accessor: (t, idx) => {
+                        let colorClass = "text-textMain";
+                        if (idx < 3) colorClass = "text-accent";
+                        if (idx >= data.length - 2 && data.length > 3) colorClass = "text-red-500";
+                        return (
+                          <div className="flex items-center gap-2">
+                            <span className={`uppercase font-bold text-[12px] ${colorClass}`}>{t.teamName}</span>
+                            {t.totalPoints >= 80 && (
+                              <div className="flex items-center gap-1 group relative">
+                                <Crown size={12} className="text-yellow-400 fill-yellow-400 animate-pulse" />
+                                <span className="text-[8px] bg-accent/20 text-accent px-1 rounded border border-accent/30 font-black">BOOYAH OURO</span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      } 
+                    },
+                    { header: 'PJ', accessor: (t) => <span className="text-textMuted">{t.matchesPlayed}</span>, align: 'center', width: '40px' },
+                    { header: 'B', accessor: (t) => <span className="text-textMuted">{t.totalBooyahs}</span>, align: 'center', width: '40px' },
+                    { header: 'K', accessor: (t) => <span className="text-textMuted">{t.totalKills}</span>, align: 'center', width: '40px' },
+                    { header: '% ABTS', accessor: (t) => <span className="text-textMuted">{(t.totalPoints > 0 ? ((t.totalKills / t.totalPoints) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' },
+                    { header: 'PTS POS', accessor: (t) => <span className="text-textMuted">{t.totalRankPoints}</span>, align: 'center', width: '60px' },
+                    { header: '% POS', accessor: (t) => <span className="text-textMuted">{(t.totalPoints > 0 ? ((t.totalRankPoints / t.totalPoints) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' },
+                    { header: 'PONTOS', accessor: (t, idx) => {
+                      let colorClass = "text-accent";
+                      if (idx >= data.length - 2 && data.length > 3) colorClass = "text-red-500";
+                      return <span className={`font-bold ${colorClass} text-lg tracking-tighter`}>{t.totalPoints}</span>;
+                    }, align: 'center', width: '75px' },
+                  ]}
+                />
+              );
+            })()}
           </div>
 
           <div className={activeTab === 'top3' ? 'block' : 'hidden'}>
@@ -208,13 +245,36 @@ const App: React.FC = () => {
                   </div>
                   <TableCard title="Última Rodada" icon={<Shield size={20} />} data={matchTeams}
                     columns={[
-                      { header: 'RANK', accessor: (t) => <span className={`font-bold ${t.rank === 1 ? 'text-accent' : 'text-tertiary'}`}>#{t.rank}</span>, align: 'center', width: '45px' },
-                      { header: 'EQUIPE', accessor: (t) => <span className={`font-bold uppercase text-[12px] ${t.rank === 1 ? 'text-accent' : 'text-textMain'}`}>{t.teamName}</span> },
-                      { header: 'K', accessor: (t) => t.killScore, align: 'center', width: '40px' },
-                      { header: '% ABTS', accessor: (t) => (t.totalScore > 0 ? ((t.killScore / t.totalScore) * 100).toFixed(0) : 0) + '%', align: 'center', width: '55px' },
-                      { header: 'PTS POS', accessor: (t) => t.rankScore, align: 'center', width: '60px' },
-                      { header: '% POS', accessor: (t) => (t.totalScore > 0 ? ((t.rankScore / t.totalScore) * 100).toFixed(0) : 0) + '%', align: 'center', width: '55px' },
-                      { header: 'PONTOS', accessor: (t) => <span className="font-bold text-lg">{t.totalScore}</span>, align: 'center', width: '75px' },
+                      { 
+                        header: 'RANK', 
+                        accessor: (t, idx) => {
+                          let colorClass = "text-tertiary";
+                          if (idx < 3) colorClass = "text-accent";
+                          if (idx >= matchTeams.length - 2 && matchTeams.length > 3) colorClass = "text-red-500";
+                          return <span className={`${colorClass} font-bold`}>#{t.rank}</span>;
+                        }, 
+                        align: 'center', 
+                        width: '45px' 
+                      },
+                      { 
+                        header: 'EQUIPE', 
+                        accessor: (t, idx) => {
+                          let colorClass = "text-textMain";
+                          if (idx < 3) colorClass = "text-accent";
+                          if (idx >= matchTeams.length - 2 && matchTeams.length > 3) colorClass = "text-red-500";
+                          return <span className={`font-bold uppercase text-[12px] ${colorClass}`}>{t.teamName}</span>;
+                        } 
+                      },
+                      { header: 'K', accessor: (t) => <span className="text-textMuted">{t.killScore}</span>, align: 'center', width: '40px' },
+                      { header: '% ABTS', accessor: (t) => <span className="text-textMuted">{(t.totalScore > 0 ? ((t.killScore / t.totalScore) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' },
+                      { header: 'PTS POS', accessor: (t) => <span className="text-textMuted">{t.rankScore}</span>, align: 'center', width: '60px' },
+                      { header: '% POS', accessor: (t) => <span className="text-textMuted">{(t.totalScore > 0 ? ((t.rankScore / t.totalScore) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' },
+                      { header: 'PONTOS', accessor: (t, idx) => {
+                        let colorClass = "text-textMain";
+                        if (idx < 3) colorClass = "text-accent";
+                        if (idx >= matchTeams.length - 2 && matchTeams.length > 3) colorClass = "text-red-500";
+                        return <span className={`font-bold text-lg ${colorClass}`}>{t.totalScore}</span>;
+                      }, align: 'center', width: '75px' },
                     ]}
                   />
                 </>
@@ -240,13 +300,39 @@ const App: React.FC = () => {
                       icon={<ListOrdered size={20} />} 
                       data={getSortedTeams(match.teams)}
                       columns={[
-                        { header: 'RANK', accessor: (t) => <span className={`font-bold ${t.rank === 1 ? 'text-accent' : 'text-tertiary'}`}>#{t.rank}</span>, align: 'center', width: '45px' },
-                        { header: 'EQUIPE', accessor: (t) => <span className={`font-bold uppercase text-[12px] ${t.rank === 1 ? 'text-accent' : 'text-textMain'}`}>{t.teamName}</span> },
-                        { header: 'K', accessor: (t) => t.killScore, align: 'center', width: '40px' },
-                        { header: '% ABTS', accessor: (t) => (t.totalScore > 0 ? ((t.killScore / t.totalScore) * 100).toFixed(0) : 0) + '%', align: 'center', width: '55px' },
-                        { header: 'PTS POS', accessor: (t) => t.rankScore, align: 'center', width: '60px' },
-                        { header: '% POS', accessor: (t) => (t.totalScore > 0 ? ((t.rankScore / t.totalScore) * 100).toFixed(0) : 0) + '%', align: 'center', width: '55px' },
-                        { header: 'PONTOS', accessor: (t) => <span className="font-bold text-lg">{t.totalScore}</span>, align: 'center', width: '75px' },
+                        { 
+                          header: 'RANK', 
+                          accessor: (t, teamIdx) => {
+                            const sortedTeams = getSortedTeams(match.teams);
+                            let colorClass = "text-tertiary";
+                            if (teamIdx < 3) colorClass = "text-accent";
+                            if (teamIdx >= sortedTeams.length - 2 && sortedTeams.length > 3) colorClass = "text-red-500";
+                            return <span className={`${colorClass} font-bold`}>#{t.rank}</span>;
+                          }, 
+                          align: 'center', 
+                          width: '45px' 
+                        },
+                        { 
+                          header: 'EQUIPE', 
+                          accessor: (t, teamIdx) => {
+                            const sortedTeams = getSortedTeams(match.teams);
+                            let colorClass = "text-textMain";
+                            if (teamIdx < 3) colorClass = "text-accent";
+                            if (teamIdx >= sortedTeams.length - 2 && sortedTeams.length > 3) colorClass = "text-red-500";
+                            return <span className={`font-bold uppercase text-[12px] ${colorClass}`}>{t.teamName}</span>;
+                          } 
+                        },
+                        { header: 'K', accessor: (t) => <span className="text-textMuted">{t.killScore}</span>, align: 'center', width: '40px' },
+                        { header: '% ABTS', accessor: (t) => <span className="text-textMuted">{(t.totalScore > 0 ? ((t.killScore / t.totalScore) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' },
+                        { header: 'PTS POS', accessor: (t) => <span className="text-textMuted">{t.rankScore}</span>, align: 'center', width: '60px' },
+                        { header: '% POS', accessor: (t) => <span className="text-textMuted">{(t.totalScore > 0 ? ((t.rankScore / t.totalScore) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' },
+                        { header: 'PONTOS', accessor: (t, teamIdx) => {
+                          const sortedTeams = getSortedTeams(match.teams);
+                          let colorClass = "text-textMain";
+                          if (teamIdx < 3) colorClass = "text-accent";
+                          if (teamIdx >= sortedTeams.length - 2 && sortedTeams.length > 3) colorClass = "text-red-500";
+                          return <span className={`font-bold text-lg ${colorClass}`}>{t.totalScore}</span>;
+                        }, align: 'center', width: '75px' },
                       ]}
                     />
                   </div>

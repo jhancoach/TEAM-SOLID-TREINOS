@@ -112,7 +112,7 @@ export const TableCard = <T,>({ title, subtitle, data, columns, icon }: TableCar
                       key={colIdx} 
                       className={`px-2 py-3 text-[12px] font-bold whitespace-nowrap ${
                         col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
-                      } ${rowIdx === 0 && colIdx === 1 ? 'text-accent' : 'text-textMuted'}`}
+                      } text-textMain`}
                     >
                       {col.accessor(item, rowIdx)}
                     </td>
