@@ -77,8 +77,13 @@ const App: React.FC = () => {
       <header className="sticky top-0 z-50 bg-secondary/90 backdrop-blur-xl border-b border-tertiary/30 px-6 py-4 shadow-2xl">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-accent rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(212,162,76,0.4)] rotate-3">
-              <Shield className="text-primary" size={28} fill="currentColor" />
+            <div className="w-14 h-14 flex items-center justify-center shrink-0">
+              <img 
+                src="https://i.ibb.co/5X713T8z/TS-LOGO-OFICIAL.png" 
+                alt="Team Solid Logo" 
+                className="w-full h-full object-contain drop-shadow-[0_0_15px_rgba(212,162,76,0.4)]"
+                referrerPolicy="no-referrer"
+              />
             </div>
             <div>
               <div className="flex items-center gap-3">
