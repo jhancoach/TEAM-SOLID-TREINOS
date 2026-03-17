@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Trophy, Camera, Loader2, Crosshair } from 'lucide-react';
+import { Trophy, Camera, Loader2, Crosshair, Target, Medal } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { GlobalTeamStats } from '../types';
 
@@ -80,15 +80,29 @@ export const Top3Banner: React.FC<Top3BannerProps> = ({ data }) => {
             
             <div className="w-full grid grid-cols-2 gap-2 mt-auto">
               <div className="bg-primary/50 rounded-xl p-2 border border-tertiary/50 flex flex-col items-center justify-center">
-                <span className="text-[9px] md:text-[10px] text-textMuted font-bold uppercase tracking-widest mb-0.5">Pontos</span>
-                <span className={`text-xl md:text-2xl font-bold ${colorClass.replace('border-', 'text-')}`}>{team.totalPoints}</span>
+                <span className="text-[8px] md:text-[9px] text-textMuted font-bold uppercase tracking-widest mb-0.5">Pts Totais</span>
+                <span className={`text-lg md:text-xl font-bold ${colorClass.replace('border-', 'text-')}`}>{team.totalPoints}</span>
               </div>
               
               <div className="bg-primary/50 rounded-xl p-2 border border-tertiary/50 flex flex-col items-center justify-center">
-                <span className="text-[9px] md:text-[10px] text-textMuted font-bold uppercase tracking-widest mb-0.5 flex items-center gap-1">
+                <span className="text-[8px] md:text-[9px] text-textMuted font-bold uppercase tracking-widest mb-0.5 flex items-center gap-1">
                   <Crosshair size={10} /> Abates
                 </span>
-                <span className="text-xl md:text-2xl font-bold text-textMain">{team.totalKills}</span>
+                <span className="text-lg md:text-xl font-bold text-textMain">{team.totalKills}</span>
+              </div>
+
+              <div className="bg-primary/50 rounded-xl p-2 border border-tertiary/50 flex flex-col items-center justify-center">
+                <span className="text-[8px] md:text-[9px] text-textMuted font-bold uppercase tracking-widest mb-0.5 flex items-center gap-1">
+                  <Target size={10} /> Pts Posição
+                </span>
+                <span className="text-lg md:text-xl font-bold text-textMain">{team.totalRankPoints}</span>
+              </div>
+
+              <div className="bg-primary/50 rounded-xl p-2 border border-tertiary/50 flex flex-col items-center justify-center">
+                <span className="text-[8px] md:text-[9px] text-textMuted font-bold uppercase tracking-widest mb-0.5 flex items-center gap-1">
+                  <Medal size={10} /> Booyahs
+                </span>
+                <span className="text-lg md:text-xl font-bold text-textMain">{team.totalBooyahs}</span>
               </div>
             </div>
           </>
@@ -116,7 +130,7 @@ export const Top3Banner: React.FC<Top3BannerProps> = ({ data }) => {
 
       <div 
         ref={bannerRef}
-        className="relative bg-primary rounded-[2.5rem] border border-tertiary/50 overflow-hidden p-8 md:p-16 flex flex-col items-center min-h-[600px]"
+        className="relative bg-primary rounded-[2.5rem] border border-tertiary/50 overflow-hidden p-8 md:p-16 flex flex-col items-center min-h-[700px]"
       >
         {/* Background effects */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-accent/20 via-secondary/40 to-primary"></div>
@@ -139,7 +153,7 @@ export const Top3Banner: React.FC<Top3BannerProps> = ({ data }) => {
             <BannerItem 
               team={second} 
               position={2} 
-              height="h-[380px] md:h-[420px]" 
+              height="h-[420px] md:h-[480px]" 
               colorClass="border-textMuted" 
               delay="delay-150"
             />
@@ -150,7 +164,7 @@ export const Top3Banner: React.FC<Top3BannerProps> = ({ data }) => {
             <BannerItem 
               team={first} 
               position={1} 
-              height="h-[420px] md:h-[480px]" 
+              height="h-[460px] md:h-[540px]" 
               colorClass="border-accent" 
               delay="delay-0"
             />
@@ -161,7 +175,7 @@ export const Top3Banner: React.FC<Top3BannerProps> = ({ data }) => {
             <BannerItem 
               team={third} 
               position={3} 
-              height="h-[360px] md:h-[400px]" 
+              height="h-[400px] md:h-[460px]" 
               colorClass="border-accent/60" 
               delay="delay-300"
             />
