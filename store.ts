@@ -182,6 +182,33 @@ export const useMatchStore = () => {
     }
   };
 
+  const updateTeamMatchStats = (matchId: string, teamName: string, newKills: number, newRankPoints: number) => {
+    const updatedMatches = matches.map(match => {
+      if (match.id !== matchId) return match;
+      
+      const updatedTeams = match.teams.map(team => {
+        if (team.teamName !== teamName) return team;
+        return {
+          ...team,
+          killScore: newKills,
+          rankScore: newRankPoints,
+          totalScore: newKills + newRankPoints
+        };
+      });
+      
+      // Re-sort teams by totalScore to update ranks
+      updatedTeams.sort((a, b) => b.totalScore - a.totalScore || b.killScore - a.killScore);
+      updatedTeams.forEach((team, index) => {
+        team.rank = index + 1;
+      });
+      
+      return { ...match, teams: updatedTeams };
+    });
+    
+    setMatches(updatedMatches);
+    if (roomID) updateCloud(updatedMatches);
+  };
+
   const getGlobalTeamStats = (): GlobalTeamStats[] => {
     const statsMap = new Map<string, { kills: number, rankPoints: number, points: number, matches: number, booyahs: number }>();
     matches.forEach(match => {
@@ -230,6 +257,6 @@ export const useMatchStore = () => {
 
   return {
     matches, mapSequence, availableMaps, roomID, isLoading,
-    addMatch, resetMatches, clearData, createRoom, updateMaps, resetMaps, getGlobalTeamStats, getGlobalPlayerStats
+    addMatch, resetMatches, clearData, createRoom, updateMaps, resetMaps, updateTeamMatchStats, getGlobalTeamStats, getGlobalPlayerStats
   };
 };

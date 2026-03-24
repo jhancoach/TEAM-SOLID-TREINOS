@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { 
-  Trophy, Upload, History as HistoryIcon, Users, TrendingUp, Calendar, Sword, Shield, Trash2, Zap, Map as MapIcon, Crown, RotateCcw, UserCheck, Share2, Globe, Cloud, Loader2, Copy, ListOrdered, Crosshair
+  Trophy, Upload, History as HistoryIcon, Users, TrendingUp, Calendar, Sword, Shield, Trash2, Zap, Map as MapIcon, Crown, RotateCcw, UserCheck, Share2, Globe, Cloud, Loader2, Copy, ListOrdered, Crosshair, Edit2, X, Save
 } from 'lucide-react';
 import { useMatchStore } from './store';
 import { parseLogFile } from './parser';
@@ -20,10 +20,11 @@ interface MatchMVP extends Player {
 type TabType = 'global-teams' | 'top3' | 'global-players' | 'top5-fraggers' | 'match-teams' | 'match-players' | 'match-history' | 'maps';
 
 const App: React.FC = () => {
-  const { matches, addMatch, resetMatches, clearData, getGlobalTeamStats, getGlobalPlayerStats, createRoom, roomID, isLoading } = useMatchStore();
+  const { matches, addMatch, resetMatches, clearData, getGlobalTeamStats, getGlobalPlayerStats, createRoom, roomID, isLoading, updateTeamMatchStats } = useMatchStore();
   const [activeTab, setActiveTab] = useState<TabType>('global-teams');
   const [isUploading, setIsUploading] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+  const [editingTeam, setEditingTeam] = useState<{ matchId: string, teamName: string, kills: number, rankPoints: number } | null>(null);
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -70,6 +71,54 @@ const App: React.FC = () => {
           <div className="flex flex-col items-center gap-4">
             <Loader2 className="animate-spin text-accent" size={48} />
             <p className="text-accent font-heading font-bold tracking-widest uppercase text-xs">Sincronizando Nuvem...</p>
+          </div>
+        </div>
+      )}
+
+      {editingTeam && (
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-secondary p-6 rounded-3xl border border-tertiary w-full max-w-sm shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-bold text-textMain uppercase tracking-widest">Editar Pontuação</h3>
+              <button onClick={() => setEditingTeam(null)} className="text-textMuted hover:text-red-500 transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-bold text-tertiary uppercase tracking-widest mb-2">Equipe</label>
+                <div className="px-4 py-3 bg-primary rounded-xl text-textMain font-bold border border-tertiary/50">
+                  {editingTeam.teamName}
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-tertiary uppercase tracking-widest mb-2">Kills (Abates)</label>
+                <input 
+                  type="number" 
+                  value={editingTeam.kills}
+                  onChange={(e) => setEditingTeam({...editingTeam, kills: parseInt(e.target.value) || 0})}
+                  className="w-full px-4 py-3 bg-primary rounded-xl text-textMain font-bold border border-tertiary focus:border-accent focus:outline-none transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-tertiary uppercase tracking-widest mb-2">Pontos de Posição</label>
+                <input 
+                  type="number" 
+                  value={editingTeam.rankPoints}
+                  onChange={(e) => setEditingTeam({...editingTeam, rankPoints: parseInt(e.target.value) || 0})}
+                  className="w-full px-4 py-3 bg-primary rounded-xl text-textMain font-bold border border-tertiary focus:border-accent focus:outline-none transition-colors"
+                />
+              </div>
+              <button 
+                onClick={() => {
+                  updateTeamMatchStats(editingTeam.matchId, editingTeam.teamName, editingTeam.kills, editingTeam.rankPoints);
+                  setEditingTeam(null);
+                }}
+                className="w-full flex items-center justify-center gap-2 px-5 py-4 mt-6 rounded-xl bg-accent text-primary font-bold text-[12px] uppercase tracking-widest hover:bg-accent/80 transition-all active:scale-95"
+              >
+                <Save size={18} /> SALVAR ALTERAÇÕES
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -275,6 +324,20 @@ const App: React.FC = () => {
                         if (idx >= matchTeams.length - 2 && matchTeams.length > 3) colorClass = "text-red-500";
                         return <span className={`font-bold text-lg ${colorClass}`}>{t.totalScore}</span>;
                       }, align: 'center', width: '75px' },
+                      { 
+                        header: '', 
+                        accessor: (t) => (
+                          <button 
+                            onClick={() => setEditingTeam({ matchId: lastMatch.id, teamName: t.teamName, kills: t.killScore, rankPoints: t.rankScore })}
+                            className="p-1.5 text-tertiary hover:text-accent hover:bg-accent/10 rounded-lg transition-colors"
+                            title="Editar Pontuação"
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                        ), 
+                        align: 'center', 
+                        width: '40px' 
+                      },
                     ]}
                   />
                 </>
@@ -333,6 +396,20 @@ const App: React.FC = () => {
                           if (teamIdx >= sortedTeams.length - 2 && sortedTeams.length > 3) colorClass = "text-red-500";
                           return <span className={`font-bold text-lg ${colorClass}`}>{t.totalScore}</span>;
                         }, align: 'center', width: '75px' },
+                        { 
+                          header: '', 
+                          accessor: (t) => (
+                            <button 
+                              onClick={() => setEditingTeam({ matchId: match.id, teamName: t.teamName, kills: t.killScore, rankPoints: t.rankScore })}
+                              className="p-1.5 text-tertiary hover:text-accent hover:bg-accent/10 rounded-lg transition-colors"
+                              title="Editar Pontuação"
+                            >
+                              <Edit2 size={14} />
+                            </button>
+                          ), 
+                          align: 'center', 
+                          width: '40px' 
+                        },
                       ]}
                     />
                   </div>
