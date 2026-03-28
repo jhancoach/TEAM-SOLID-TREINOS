@@ -1,6 +1,6 @@
 
-import React, { useRef, useState } from 'react';
-import { Camera, Download, Loader2 } from 'lucide-react';
+import React, { useRef, useState, useMemo } from 'react';
+import { Camera, Download, Loader2, ChevronUp, ChevronDown, ChevronsUpDown } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
 interface Column<T> {
@@ -8,6 +8,7 @@ interface Column<T> {
   accessor: (item: T, index: number) => React.ReactNode;
   align?: 'left' | 'center' | 'right';
   width?: string;
+  sortKey?: string;
 }
 
 interface TableCardProps<T> {
@@ -21,6 +22,28 @@ interface TableCardProps<T> {
 export const TableCard = <T,>({ title, subtitle, data, columns, icon }: TableCardProps<T>) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+
+  const sortedData = useMemo(() => {
+    if (!sortConfig) return data;
+    
+    return [...data].sort((a: any, b: any) => {
+      const aValue = a[sortConfig.key];
+      const bValue = b[sortConfig.key];
+      
+      if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }, [data, sortConfig]);
+
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'desc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'desc') {
+      direction = 'asc';
+    }
+    setSortConfig({ key, direction });
+  };
 
   const handleCapture = async () => {
     if (!cardRef.current || data.length === 0) return;
@@ -93,19 +116,35 @@ export const TableCard = <T,>({ title, subtitle, data, columns, icon }: TableCar
               {columns.map((col, idx) => (
                 <th 
                   key={idx} 
-                  className={`px-2 py-3 text-[9px] font-bold text-textMuted uppercase tracking-widest border-b border-tertiary ${
+                  className={`px-2 py-3 text-[9px] font-bold text-textMuted uppercase tracking-widest border-b border-tertiary transition-colors ${
+                    col.sortKey ? 'cursor-pointer hover:bg-tertiary/50 hover:text-accent' : ''
+                  } ${
                     col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'
                   }`}
                   style={{ width: col.width || 'auto' }}
+                  onClick={() => col.sortKey && handleSort(col.sortKey)}
                 >
-                  {col.header}
+                  <div className={`flex items-center gap-1.5 ${
+                    col.align === 'center' ? 'justify-center' : col.align === 'right' ? 'justify-end' : 'justify-start'
+                  }`}>
+                    {col.header}
+                    {col.sortKey && (
+                      <span className="text-tertiary">
+                        {sortConfig?.key === col.sortKey ? (
+                          sortConfig.direction === 'asc' ? <ChevronUp size={10} /> : <ChevronDown size={10} />
+                        ) : (
+                          <ChevronsUpDown size={10} className="opacity-30" />
+                        )}
+                      </span>
+                    )}
+                  </div>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody className="divide-y divide-tertiary/30">
-            {data.length > 0 ? (
-              data.map((item, rowIdx) => (
+            {sortedData.length > 0 ? (
+              sortedData.map((item, rowIdx) => (
                 <tr key={rowIdx} className="hover:bg-accent/[0.02] transition-colors">
                   {columns.map((col, colIdx) => (
                     <td 

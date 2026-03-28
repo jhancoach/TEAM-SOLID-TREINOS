@@ -9,6 +9,7 @@ import { TableCard } from './components/TableCard';
 import { MapPicker } from './components/MapPicker';
 import { Top3Banner } from './components/Top3Banner';
 import { Top5FraggersBanner } from './components/Top5FraggersBanner';
+import { Top3SummaryCards } from './components/Top3SummaryCards';
 import { Player, Team } from './types';
 
 interface MatchMVP extends Player {
@@ -212,51 +213,55 @@ const App: React.FC = () => {
             {(() => {
               const data = getGlobalTeamStats();
               return (
-                <TableCard title="Ranking Geral" subtitle="Estatísticas Acumuladas" icon={<Trophy size={20} />} data={data}
-                  columns={[
-                    { 
-                      header: 'POS', 
-                      accessor: (_, idx) => {
-                        let colorClass = "text-textMuted";
-                        if (idx < 3) colorClass = "text-accent";
+                <>
+                  <Top3SummaryCards data={data} />
+                  <TableCard title="Ranking Geral" subtitle="Estatísticas Acumuladas" icon={<Trophy size={20} />} data={data}
+                    columns={[
+                      { 
+                        header: 'POS', 
+                        accessor: (_, idx) => {
+                          let colorClass = "text-textMuted";
+                          if (idx < 3) colorClass = "text-accent";
+                          if (idx >= data.length - 2 && data.length > 3) colorClass = "text-red-500";
+                          return <span className={`${colorClass} font-bold`}>#{idx + 1}</span>;
+                        }, 
+                        align: 'center', 
+                        width: '45px' 
+                      },
+                      { 
+                        header: 'TIME', 
+                        sortKey: 'teamName',
+                        accessor: (t, idx) => {
+                          let colorClass = "text-textMain";
+                          if (idx < 3) colorClass = "text-accent";
+                          if (idx >= data.length - 2 && data.length > 3) colorClass = "text-red-500";
+                          return (
+                            <div className="flex items-center gap-2">
+                              <span className={`uppercase font-bold text-[12px] ${colorClass}`}>{t.teamName}</span>
+                              {t.totalPoints >= 80 && (
+                                <div className="flex items-center gap-1 group relative">
+                                  <Crown size={12} className="text-yellow-400 fill-yellow-400 animate-pulse" />
+                                  <span className="text-[8px] bg-accent/20 text-accent px-1 rounded border border-accent/30 font-black">BOOYAH OURO</span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        } 
+                      },
+                      { header: 'PJ', sortKey: 'matchesPlayed', accessor: (t) => <span className="text-textMuted">{t.matchesPlayed}</span>, align: 'center', width: '40px' },
+                      { header: 'B', sortKey: 'totalBooyahs', accessor: (t) => <span className="text-textMuted">{t.totalBooyahs}</span>, align: 'center', width: '40px' },
+                      { header: 'K', sortKey: 'totalKills', accessor: (t) => <span className="text-textMuted">{t.totalKills}</span>, align: 'center', width: '40px' },
+                      { header: '% ABTS', accessor: (t) => <span className="text-textMuted">{(t.totalPoints > 0 ? ((t.totalKills / t.totalPoints) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' },
+                      { header: 'PTS POS', sortKey: 'totalRankPoints', accessor: (t) => <span className="text-textMuted">{t.totalRankPoints}</span>, align: 'center', width: '60px' },
+                      { header: '% POS', accessor: (t) => <span className="text-textMuted">{(t.totalPoints > 0 ? ((t.totalRankPoints / t.totalPoints) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' },
+                      { header: 'PONTOS', sortKey: 'totalPoints', accessor: (t, idx) => {
+                        let colorClass = "text-accent";
                         if (idx >= data.length - 2 && data.length > 3) colorClass = "text-red-500";
-                        return <span className={`${colorClass} font-bold`}>#{idx + 1}</span>;
-                      }, 
-                      align: 'center', 
-                      width: '45px' 
-                    },
-                    { 
-                      header: 'TIME', 
-                      accessor: (t, idx) => {
-                        let colorClass = "text-textMain";
-                        if (idx < 3) colorClass = "text-accent";
-                        if (idx >= data.length - 2 && data.length > 3) colorClass = "text-red-500";
-                        return (
-                          <div className="flex items-center gap-2">
-                            <span className={`uppercase font-bold text-[12px] ${colorClass}`}>{t.teamName}</span>
-                            {t.totalPoints >= 80 && (
-                              <div className="flex items-center gap-1 group relative">
-                                <Crown size={12} className="text-yellow-400 fill-yellow-400 animate-pulse" />
-                                <span className="text-[8px] bg-accent/20 text-accent px-1 rounded border border-accent/30 font-black">BOOYAH OURO</span>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      } 
-                    },
-                    { header: 'PJ', accessor: (t) => <span className="text-textMuted">{t.matchesPlayed}</span>, align: 'center', width: '40px' },
-                    { header: 'B', accessor: (t) => <span className="text-textMuted">{t.totalBooyahs}</span>, align: 'center', width: '40px' },
-                    { header: 'K', accessor: (t) => <span className="text-textMuted">{t.totalKills}</span>, align: 'center', width: '40px' },
-                    { header: '% ABTS', accessor: (t) => <span className="text-textMuted">{(t.totalPoints > 0 ? ((t.totalKills / t.totalPoints) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' },
-                    { header: 'PTS POS', accessor: (t) => <span className="text-textMuted">{t.totalRankPoints}</span>, align: 'center', width: '60px' },
-                    { header: '% POS', accessor: (t) => <span className="text-textMuted">{(t.totalPoints > 0 ? ((t.totalRankPoints / t.totalPoints) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' },
-                    { header: 'PONTOS', accessor: (t, idx) => {
-                      let colorClass = "text-accent";
-                      if (idx >= data.length - 2 && data.length > 3) colorClass = "text-red-500";
-                      return <span className={`font-bold ${colorClass} text-lg tracking-tighter`}>{t.totalPoints}</span>;
-                    }, align: 'center', width: '75px' },
-                  ]}
-                />
+                        return <span className={`font-bold ${colorClass} text-lg tracking-tighter`}>{t.totalPoints}</span>;
+                      }, align: 'center', width: '75px' },
+                    ]}
+                  />
+                </>
               );
             })()}
           </div>
