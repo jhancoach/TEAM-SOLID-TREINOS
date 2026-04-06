@@ -4,9 +4,10 @@ import { Trophy, Sword, Crown } from 'lucide-react';
 
 interface Top3SummaryCardsProps {
   data: GlobalTeamStats[];
+  rankingMode?: 'standard' | 'position-only';
 }
 
-export const Top3SummaryCards: React.FC<Top3SummaryCardsProps> = ({ data }) => {
+export const Top3SummaryCards: React.FC<Top3SummaryCardsProps> = ({ data, rankingMode = 'standard' }) => {
   if (!data || data.length === 0) return null;
 
   const topByRankPoints = [...data].sort((a, b) => b.totalRankPoints - a.totalRankPoints).slice(0, 3);
@@ -54,7 +55,7 @@ export const Top3SummaryCards: React.FC<Top3SummaryCardsProps> = ({ data }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 animate-in fade-in slide-in-from-top-4 duration-500">
       {renderCard('Pontos de Posição', <Trophy size={20} />, topByRankPoints, 'totalRankPoints', 'pts')}
-      {renderCard('Total de Abates', <Sword size={20} />, topByKills, 'totalKills', 'kills')}
+      {rankingMode !== 'position-only' && renderCard('Total de Abates', <Sword size={20} />, topByKills, 'totalKills', 'kills')}
       {renderCard('Total de Booyahs', <Crown size={20} />, topByBooyahs, 'totalBooyahs', 'booyahs')}
     </div>
   );

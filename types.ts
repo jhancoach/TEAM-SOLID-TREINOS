@@ -28,6 +28,7 @@ export interface GlobalTeamStats {
   totalPoints: number;
   averagePoints: number;
   totalBooyahs: number;
+  lastMatchRank: number;
 }
 
 export interface GlobalPlayerStats {

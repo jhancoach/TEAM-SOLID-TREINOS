@@ -5,9 +5,10 @@ import { GlobalTeamStats } from '../types';
 
 interface Top3BannerProps {
   data: GlobalTeamStats[];
+  rankingMode?: 'standard' | 'position-only';
 }
 
-export const Top3Banner: React.FC<Top3BannerProps> = ({ data }) => {
+export const Top3Banner: React.FC<Top3BannerProps> = ({ data, rankingMode = 'standard' }) => {
   const bannerRef = useRef<HTMLDivElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
 
@@ -80,8 +81,12 @@ export const Top3Banner: React.FC<Top3BannerProps> = ({ data }) => {
             
             <div className="w-full grid grid-cols-2 gap-2 mt-auto">
               <div className="bg-primary/50 rounded-xl p-2 border border-tertiary/50 flex flex-col items-center justify-center">
-                <span className="text-[8px] md:text-[9px] text-textMuted font-bold uppercase tracking-widest mb-0.5">Pts Totais</span>
-                <span className={`text-lg md:text-xl font-bold ${colorClass.replace('border-', 'text-')}`}>{team.totalPoints}</span>
+                <span className="text-[8px] md:text-[9px] text-textMuted font-bold uppercase tracking-widest mb-0.5">
+                  {rankingMode === 'position-only' ? 'Pts Posição' : 'Pts Totais'}
+                </span>
+                <span className={`text-lg md:text-xl font-bold ${colorClass.replace('border-', 'text-')}`}>
+                  {rankingMode === 'position-only' ? team.totalRankPoints : team.totalPoints}
+                </span>
               </div>
               
               <div className="bg-primary/50 rounded-xl p-2 border border-tertiary/50 flex flex-col items-center justify-center">
@@ -93,9 +98,11 @@ export const Top3Banner: React.FC<Top3BannerProps> = ({ data }) => {
 
               <div className="bg-primary/50 rounded-xl p-2 border border-tertiary/50 flex flex-col items-center justify-center">
                 <span className="text-[8px] md:text-[9px] text-textMuted font-bold uppercase tracking-widest mb-0.5 flex items-center gap-1">
-                  <Target size={10} /> Pts Posição
+                  <Target size={10} /> {rankingMode === 'position-only' ? 'Pts Totais' : 'Pts Posição'}
                 </span>
-                <span className="text-lg md:text-xl font-bold text-textMain">{team.totalRankPoints}</span>
+                <span className="text-lg md:text-xl font-bold text-textMain">
+                  {rankingMode === 'position-only' ? team.totalPoints : team.totalRankPoints}
+                </span>
               </div>
 
               <div className="bg-primary/50 rounded-xl p-2 border border-tertiary/50 flex flex-col items-center justify-center">

@@ -21,7 +21,10 @@ interface MatchMVP extends Player {
 type TabType = 'global-teams' | 'top3' | 'global-players' | 'top5-fraggers' | 'match-teams' | 'match-players' | 'match-history' | 'maps';
 
 const App: React.FC = () => {
-  const { matches, addMatch, resetMatches, clearData, getGlobalTeamStats, getGlobalPlayerStats, createRoom, roomID, isLoading, updateTeamMatchStats } = useMatchStore();
+  const { 
+    matches, addMatch, resetMatches, clearData, getGlobalTeamStats, getGlobalPlayerStats, 
+    createRoom, roomID, isLoading, updateTeamMatchStats, rankingMode, toggleRankingMode 
+  } = useMatchStore();
   const [activeTab, setActiveTab] = useState<TabType>('global-teams');
   const [isUploading, setIsUploading] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
@@ -57,13 +60,23 @@ const App: React.FC = () => {
   };
 
   const lastMatch = matches.length > 0 ? matches[matches.length - 1] : null;
-  const matchTeams = lastMatch ? [...lastMatch.teams].sort((a, b) => b.totalScore - a.totalScore || a.rank - b.rank) : [];
+  const matchTeams = lastMatch ? [...lastMatch.teams].sort((a, b) => {
+    if (rankingMode === 'position-only') {
+      return b.rankScore - a.rankScore || b.killScore - a.killScore;
+    }
+    return b.totalScore - a.totalScore || a.rank - b.rank;
+  }) : [];
   const matchMVPs: MatchMVP[] = lastMatch ? lastMatch.teams.flatMap(t => t.players.map(p => ({
     ...p, teamName: t.teamName, teamRank: t.rank, participation: t.killScore > 0 ? ((p.kills / t.killScore) * 100).toFixed(1) : '0'
   }))).sort((a, b) => b.kills - a.kills) : [];
 
   // Função para formatar os times de uma partida específica
-  const getSortedTeams = (teams: Team[]) => [...teams].sort((a, b) => b.totalScore - a.totalScore || a.rank - b.rank);
+  const getSortedTeams = (teams: Team[]) => [...teams].sort((a, b) => {
+    if (rankingMode === 'position-only') {
+      return b.rankScore - a.rankScore || b.killScore - a.killScore;
+    }
+    return b.totalScore - a.totalScore || a.rank - b.rank;
+  });
 
   return (
     <div className="min-h-screen pb-24 selection:bg-accent selection:text-primary bg-primary font-sans">
@@ -168,6 +181,19 @@ const App: React.FC = () => {
             )}
 
             <button 
+              onClick={toggleRankingMode}
+              className={`flex items-center gap-2 px-5 py-3 rounded-2xl border font-bold text-[10px] uppercase tracking-widest transition-all active:scale-95 shadow-xl ${
+                rankingMode === 'position-only' 
+                ? 'bg-accent/20 border-accent text-accent' 
+                : 'bg-secondary border-tertiary text-textMuted hover:text-textMain'
+              }`}
+              title={rankingMode === 'position-only' ? 'Ranking por Posição' : 'Ranking Padrão (Kills + Posição)'}
+            >
+              {rankingMode === 'position-only' ? <Trophy size={16} /> : <Sword size={16} />}
+              {rankingMode === 'position-only' ? 'SÓ POSIÇÃO' : 'PADRÃO'}
+            </button>
+
+            <button 
               onClick={resetMatches}
               className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-secondary border border-tertiary text-textMain font-bold text-[10px] uppercase tracking-widest hover:bg-tertiary transition-all active:scale-95 shadow-xl"
             >
@@ -190,13 +216,13 @@ const App: React.FC = () => {
           {[
             { id: 'global-teams', label: 'Ranking Geral', icon: <Trophy size={14} /> },
             { id: 'top3', label: 'Top 3', icon: <Crown size={14} /> },
-            { id: 'global-players', label: 'Top Fraggers', icon: <Users size={14} /> },
-            { id: 'top5-fraggers', label: 'Top 5 Fraggers', icon: <Crosshair size={14} /> },
+            { id: 'global-players', label: 'Top Fraggers', icon: <Users size={14} />, hidden: rankingMode === 'position-only' },
+            { id: 'top5-fraggers', label: 'Top 5 Fraggers', icon: <Crosshair size={14} />, hidden: rankingMode === 'position-only' },
             { id: 'match-teams', label: 'Última Rodada', icon: <TrendingUp size={14} /> },
-            { id: 'match-players', label: 'MVPs Rodada', icon: <UserCheck size={14} /> },
+            { id: 'match-players', label: 'MVPs Rodada', icon: <UserCheck size={14} />, hidden: rankingMode === 'position-only' },
             { id: 'match-history', label: 'Histórico', icon: <ListOrdered size={14} /> },
             { id: 'maps', label: 'Mapas', icon: <MapIcon size={14} /> }
-          ].map((tab) => (
+          ].filter(tab => !tab.hidden).map((tab) => (
             <button 
               key={tab.id} 
               onClick={() => setActiveTab(tab.id as TabType)} 
@@ -214,7 +240,7 @@ const App: React.FC = () => {
               const data = getGlobalTeamStats();
               return (
                 <>
-                  <Top3SummaryCards data={data} />
+                  <Top3SummaryCards data={data} rankingMode={rankingMode} />
                   <TableCard title="Ranking Geral" subtitle="Estatísticas Acumuladas" icon={<Trophy size={20} />} data={data}
                     columns={[
                       { 
@@ -250,16 +276,17 @@ const App: React.FC = () => {
                       },
                       { header: 'PJ', sortKey: 'matchesPlayed', accessor: (t) => <span className="text-textMuted">{t.matchesPlayed}</span>, align: 'center', width: '40px' },
                       { header: 'B', sortKey: 'totalBooyahs', accessor: (t) => <span className="text-textMuted">{t.totalBooyahs}</span>, align: 'center', width: '40px' },
-                      { header: 'K', sortKey: 'totalKills', accessor: (t) => <span className="text-textMuted">{t.totalKills}</span>, align: 'center', width: '40px' },
-                      { header: '% ABTS', accessor: (t) => <span className="text-textMuted">{(t.totalPoints > 0 ? ((t.totalKills / t.totalPoints) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' },
+                      rankingMode !== 'position-only' ? { header: 'K', sortKey: 'totalKills', accessor: (t) => <span className="text-textMuted">{t.totalKills}</span>, align: 'center', width: '40px' } : null,
+                      rankingMode !== 'position-only' ? { header: '% ABTS', accessor: (t) => <span className="text-textMuted">{(t.totalPoints > 0 ? ((t.totalKills / t.totalPoints) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' } : null,
                       { header: 'PTS POS', sortKey: 'totalRankPoints', accessor: (t) => <span className="text-textMuted">{t.totalRankPoints}</span>, align: 'center', width: '60px' },
-                      { header: '% POS', accessor: (t) => <span className="text-textMuted">{(t.totalPoints > 0 ? ((t.totalRankPoints / t.totalPoints) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' },
-                      { header: 'PONTOS', sortKey: 'totalPoints', accessor: (t, idx) => {
+                      rankingMode !== 'position-only' ? { header: '% POS', accessor: (t) => <span className="text-textMuted">{(t.totalPoints > 0 ? ((t.totalRankPoints / t.totalPoints) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' } : null,
+                      rankingMode === 'position-only' ? { header: 'ULT POS', sortKey: 'lastMatchRank', accessor: (t) => <span className="text-textMuted">{t.lastMatchRank === 99 ? '-' : `#${t.lastMatchRank}`}</span>, align: 'center', width: '60px' } : null,
+                      { header: 'PONTOS', sortKey: rankingMode === 'position-only' ? 'totalRankPoints' : 'totalPoints', accessor: (t, idx) => {
                         let colorClass = "text-accent";
                         if (idx >= data.length - 2 && data.length > 3) colorClass = "text-red-500";
-                        return <span className={`font-bold ${colorClass} text-lg tracking-tighter`}>{t.totalPoints}</span>;
+                        return <span className={`font-bold ${colorClass} text-lg tracking-tighter`}>{rankingMode === 'position-only' ? t.totalRankPoints : t.totalPoints}</span>;
                       }, align: 'center', width: '75px' },
-                    ]}
+                    ].filter(Boolean) as any}
                   />
                 </>
               );
@@ -267,7 +294,7 @@ const App: React.FC = () => {
           </div>
 
           <div className={activeTab === 'top3' ? 'block' : 'hidden'}>
-            <Top3Banner data={getGlobalTeamStats()} />
+            <Top3Banner data={getGlobalTeamStats()} rankingMode={rankingMode} />
           </div>
 
           <div className={activeTab === 'global-players' ? 'block' : 'hidden'}>
@@ -319,15 +346,15 @@ const App: React.FC = () => {
                           return <span className={`font-bold uppercase text-[12px] ${colorClass}`}>{t.teamName}</span>;
                         } 
                       },
-                      { header: 'K', accessor: (t) => <span className="text-textMuted">{t.killScore}</span>, align: 'center', width: '40px' },
-                      { header: '% ABTS', accessor: (t) => <span className="text-textMuted">{(t.totalScore > 0 ? ((t.killScore / t.totalScore) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' },
+                      rankingMode !== 'position-only' ? { header: 'K', accessor: (t) => <span className="text-textMuted">{t.killScore}</span>, align: 'center', width: '40px' } : null,
+                      rankingMode !== 'position-only' ? { header: '% ABTS', accessor: (t) => <span className="text-textMuted">{(t.totalScore > 0 ? ((t.killScore / t.totalScore) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' } : null,
                       { header: 'PTS POS', accessor: (t) => <span className="text-textMuted">{t.rankScore}</span>, align: 'center', width: '60px' },
-                      { header: '% POS', accessor: (t) => <span className="text-textMuted">{(t.totalScore > 0 ? ((t.rankScore / t.totalScore) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' },
+                      rankingMode !== 'position-only' ? { header: '% POS', accessor: (t) => <span className="text-textMuted">{(t.totalScore > 0 ? ((t.rankScore / t.totalScore) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' } : null,
                       { header: 'PONTOS', accessor: (t, idx) => {
                         let colorClass = "text-textMain";
                         if (idx < 3) colorClass = "text-accent";
                         if (idx >= matchTeams.length - 2 && matchTeams.length > 3) colorClass = "text-red-500";
-                        return <span className={`font-bold text-lg ${colorClass}`}>{t.totalScore}</span>;
+                        return <span className={`font-bold text-lg ${colorClass}`}>{rankingMode === 'position-only' ? t.rankScore : t.totalScore}</span>;
                       }, align: 'center', width: '75px' },
                       { 
                         header: '', 
@@ -343,7 +370,7 @@ const App: React.FC = () => {
                         align: 'center', 
                         width: '40px' 
                       },
-                    ]}
+                    ].filter(Boolean) as any}
                   />
                 </>
               ) : <EmptyState icon={<HistoryIcon size={20} />} text="Nenhum dado importado" />}
@@ -390,16 +417,16 @@ const App: React.FC = () => {
                             return <span className={`font-bold uppercase text-[12px] ${colorClass}`}>{t.teamName}</span>;
                           } 
                         },
-                        { header: 'K', accessor: (t) => <span className="text-textMuted">{t.killScore}</span>, align: 'center', width: '40px' },
-                        { header: '% ABTS', accessor: (t) => <span className="text-textMuted">{(t.totalScore > 0 ? ((t.killScore / t.totalScore) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' },
+                        rankingMode !== 'position-only' ? { header: 'K', accessor: (t) => <span className="text-textMuted">{t.killScore}</span>, align: 'center', width: '40px' } : null,
+                        rankingMode !== 'position-only' ? { header: '% ABTS', accessor: (t) => <span className="text-textMuted">{(t.totalScore > 0 ? ((t.killScore / t.totalScore) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' } : null,
                         { header: 'PTS POS', accessor: (t) => <span className="text-textMuted">{t.rankScore}</span>, align: 'center', width: '60px' },
-                        { header: '% POS', accessor: (t) => <span className="text-textMuted">{(t.totalScore > 0 ? ((t.rankScore / t.totalScore) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' },
+                        rankingMode !== 'position-only' ? { header: '% POS', accessor: (t) => <span className="text-textMuted">{(t.totalScore > 0 ? ((t.rankScore / t.totalScore) * 100).toFixed(0) : 0) + '%'}</span>, align: 'center', width: '55px' } : null,
                         { header: 'PONTOS', accessor: (t, teamIdx) => {
                           const sortedTeams = getSortedTeams(match.teams);
                           let colorClass = "text-textMain";
                           if (teamIdx < 3) colorClass = "text-accent";
                           if (teamIdx >= sortedTeams.length - 2 && sortedTeams.length > 3) colorClass = "text-red-500";
-                          return <span className={`font-bold text-lg ${colorClass}`}>{t.totalScore}</span>;
+                          return <span className={`font-bold text-lg ${colorClass}`}>{rankingMode === 'position-only' ? t.rankScore : t.totalScore}</span>;
                         }, align: 'center', width: '75px' },
                         { 
                           header: '', 
@@ -415,7 +442,7 @@ const App: React.FC = () => {
                           align: 'center', 
                           width: '40px' 
                         },
-                      ]}
+                      ].filter(Boolean) as any}
                     />
                   </div>
                 ))

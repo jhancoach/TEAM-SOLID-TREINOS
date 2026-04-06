@@ -20,6 +20,7 @@ export const useMatchStore = () => {
   const [availableMaps, setAvailableMaps] = useState<MapInfo[]>([...MAPS_DATABASE]);
   const [roomID, setRoomID] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [rankingMode, setRankingMode] = useState<'standard' | 'position-only'>('standard');
 
   // Inicialização: Verifica se há sala na URL ou no LocalStorage
   useEffect(() => {
@@ -64,6 +65,7 @@ export const useMatchStore = () => {
         setMatches(data.matches || []);
         setMapSequence(data.maps?.sequence || []);
         setAvailableMaps(data.maps?.available || [...MAPS_DATABASE]);
+        setRankingMode(data.rankingMode || 'standard');
         setRoomID(id);
       } else {
         alert("Sala não encontrada ou expirada. Carregando dados locais.");
@@ -81,7 +83,8 @@ export const useMatchStore = () => {
     try {
       const payload = {
         matches,
-        maps: { sequence: mapSequence, available: availableMaps }
+        maps: { sequence: mapSequence, available: availableMaps },
+        rankingMode
       };
       const res = await fetch(API_BASE, {
         method: 'POST',
@@ -112,7 +115,8 @@ export const useMatchStore = () => {
     try {
       const payload = {
         matches: newMatches,
-        maps: { sequence: mapSequence, available: availableMaps }
+        maps: { sequence: mapSequence, available: availableMaps },
+        rankingMode
       };
       await fetch(`${API_BASE}/${roomID}`, {
         method: 'PUT',
@@ -196,8 +200,13 @@ export const useMatchStore = () => {
         };
       });
       
-      // Re-sort teams by totalScore to update ranks
-      updatedTeams.sort((a, b) => b.totalScore - a.totalScore || b.killScore - a.killScore);
+      // Re-sort teams to update ranks based on current mode
+      updatedTeams.sort((a, b) => {
+        if (rankingMode === 'position-only') {
+          return b.rankScore - a.rankScore || b.killScore - a.killScore;
+        }
+        return b.totalScore - a.totalScore || b.killScore - a.killScore;
+      });
       updatedTeams.forEach((team, index) => {
         team.rank = index + 1;
       });
@@ -209,21 +218,44 @@ export const useMatchStore = () => {
     if (roomID) updateCloud(updatedMatches);
   };
 
+  const toggleRankingMode = () => {
+    const newMode = rankingMode === 'standard' ? 'position-only' : 'standard';
+    setRankingMode(newMode);
+    
+    // If we have a room, update it on the cloud
+    if (roomID) {
+      const payload = {
+        matches,
+        maps: { sequence: mapSequence, available: availableMaps },
+        rankingMode: newMode
+      };
+      fetch(`${API_BASE}/${roomID}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    }
+  };
+
   const getGlobalTeamStats = (): GlobalTeamStats[] => {
-    const statsMap = new Map<string, { kills: number, rankPoints: number, points: number, matches: number, booyahs: number }>();
+    const statsMap = new Map<string, { kills: number, rankPoints: number, points: number, matches: number, booyahs: number, lastRank: number }>();
+    
+    // Process matches in chronological order to track the very last rank
     matches.forEach(match => {
       match.teams.forEach(team => {
         const name = team.teamName;
-        const existing = statsMap.get(name) || { kills: 0, rankPoints: 0, points: 0, matches: 0, booyahs: 0 };
+        const existing = statsMap.get(name) || { kills: 0, rankPoints: 0, points: 0, matches: 0, booyahs: 0, lastRank: 99 };
         statsMap.set(name, {
           kills: existing.kills + (Number(team.killScore) || 0),
           rankPoints: existing.rankPoints + (Number(team.rankScore) || 0),
           points: existing.points + (Number(team.totalScore) || 0),
           matches: existing.matches + 1,
-          booyahs: existing.booyahs + (Number(team.rank) === 1 ? 1 : 0)
+          booyahs: existing.booyahs + (Number(team.rank) === 1 ? 1 : 0),
+          lastRank: Number(team.rank) // This will be the rank of the team in the latest match they participated in
         });
       });
     });
+
     return Array.from(statsMap.entries()).map(([name, data]) => ({
       teamName: name,
       matchesPlayed: data.matches,
@@ -231,8 +263,20 @@ export const useMatchStore = () => {
       totalRankPoints: data.rankPoints,
       totalPoints: data.points,
       averagePoints: Number((data.points / data.matches).toFixed(2)),
-      totalBooyahs: data.booyahs
-    })).sort((a, b) => b.totalPoints - a.totalPoints || b.totalBooyahs - a.totalBooyahs);
+      totalBooyahs: data.booyahs,
+      lastMatchRank: data.lastRank
+    })).sort((a, b) => {
+      if (rankingMode === 'position-only') {
+        // 1. Total Rank Points (desc)
+        // 2. Total Booyahs (desc)
+        // 3. Last Match Rank (asc - lower is better)
+        return b.totalRankPoints - a.totalRankPoints || 
+               b.totalBooyahs - a.totalBooyahs || 
+               a.lastMatchRank - b.lastMatchRank;
+      }
+      // Standard: Total Points (desc) || Total Booyahs (desc)
+      return b.totalPoints - a.totalPoints || b.totalBooyahs - a.totalBooyahs;
+    });
   };
 
   const getGlobalPlayerStats = (): GlobalPlayerStats[] => {
@@ -256,7 +300,7 @@ export const useMatchStore = () => {
   };
 
   return {
-    matches, mapSequence, availableMaps, roomID, isLoading,
-    addMatch, resetMatches, clearData, createRoom, updateMaps, resetMaps, updateTeamMatchStats, getGlobalTeamStats, getGlobalPlayerStats
+    matches, mapSequence, availableMaps, roomID, isLoading, rankingMode,
+    addMatch, resetMatches, clearData, createRoom, updateMaps, resetMaps, updateTeamMatchStats, getGlobalTeamStats, getGlobalPlayerStats, toggleRankingMode
   };
 };
